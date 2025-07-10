@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Users List & Insert - Supabase</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    table { border-collapse: collapse; width: 100%; margin-top: 2em; }
+    th, td { border: 1px solid #ccc; padding: 0.5em; text-align: left; }
+    th { background: #f4f4f4; }
+    label { display: block; margin-top: 1em; }
+    input, button { margin-top: 0.5em; }
+    #message { margin-top: 1em; }
+    #message.success { color: green; }
+    #message.error { color: red; }
+    .edit-row input { width: 90%; }
+    .action-btn { margin-right: 0.5em; }
+    .profile-photo { width: 48px; height: 48px; object-fit: cover; border-radius: 50%; border: 1px solid #aaa; }
+  </style>
+</head>
+<body>
+  <h1>Users List & Insert</h1>
+  <form id="user-form">
+    <label>Email:
+      <input type="email" id="email" required />
+    </label>
+    <label>Name:
+      <input type="text" id="name" required />
+    </label>
+    <label>Mobile:
+      <input type="text" id="mobile" required />
+    </label>
+    <label>Profile Photo:
+      <input type="file" id="photo" accept="image/*" />
+    </label>
+    <button type="submit">Add User</button>
+  </form>
+  <div id="message"></div>
+
+  <h2>All Users</h2>
+  <table id="users-table">
+    <thead>
+      <tr><th>Photo</th><th>Email</th><th>Name</th><th>Mobile</th><th>Created At</th><th>Actions</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    // Replace with your Supabase project credentials
+    const SUPABASE_URL = 'https://wtcxhhbigmqrmqdyhzcz.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0Y3hoaGJpZ21xcm1xZHloemN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIxNjE3ODgsImV4cCI6MjA2NzczNzc4OH0.AIViaiRT2odHJM2wQXl3dDZ69YxEj7t_7UiRFqEgZjY';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const userForm = document.getElementById('user-form');
+    const messageDiv = document.getElementById('message');
+    const usersTableBody = document.querySelector('#users-table tbody');
+    const photoInput = document.getElementById('photo');
+
+    let editingUserId = null;
+    let editPhotoInputRefs = {};
+
+    // Helper to render photo from base64
+    function renderPhoto(photoBase64) {
+      if (!photoBase64) return '';
+      return `<img src="data:image/png;base64,${photoBase64}" class="profile-photo" />`;
+    }
+
+    // Fetch and display all users
+    async function loadUsers() {
+      usersTableBody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
+      const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: false });
+      if (error) {
+        usersTableBody.innerHTML = `<tr><td colspan="6">${error.message}</td></tr>`;
+        return;
+      }
+      if (!data || data.length === 0) {
+        usersTableBody.innerHTML = '<tr><td colspan="6">No users found.</td></tr>';
+        return;
+      }
+      usersTableBody.innerHTML = '';
+      editPhotoInputRefs = {};
+      data.forEach(user => {
+        if (editingUserId === user.id) {
+          // Edit mode row
+          const tr = document.createElement('tr');
+          tr.className = 'edit-row';
+          tr.innerHTML = `
+            <td>
+              ${renderPhoto(user.profile_photo_data)}<br/>
+              <input type="file" accept="image/*" id="edit-photo-${user.id}" />
+            </td>
+            <td>${user.email}</td>
+            <td><input type="text" value="${user.name || ''}" id="edit-name-${user.id}" /></td>
+            <td><input type="text" value="${user.mobile || ''}" id="edit-mobile-${user.id}" /></td>
+            <td>${user.created_at ? new Date(user.created_at).toLocaleString() : ''}</td>
+            <td>
+              <button class="action-btn" onclick="saveEditUser('${user.id}')">Save</button>
+              <button class="action-btn" onclick="cancelEditUser()">Cancel</button>
+            </td>
+          `;
+          usersTableBody.appendChild(tr);
+          // Store reference to the file input for this row
+          editPhotoInputRefs[user.id] = tr.querySelector(`#edit-photo-${user.id}`);
+        } else {
+          // Normal row
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${renderPhoto(user.profile_photo_data)}</td>
+            <td>${user.email}</td>
+            <td>${user.name || ''}</td>
+            <td>${user.mobile || ''}</td>
+            <td>${user.created_at ? new Date(user.created_at).toLocaleString() : ''}</td>
+            <td>
+              <button class="action-btn" onclick="editUser('${user.id}')">Edit</button>
+            </td>
+          `;
+          usersTableBody.appendChild(tr);
+        }
+      });
+    }
+
+    // Read file as base64
+    function readFileAsBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          // Remove the data:image/...;base64, prefix if present
+          const result = reader.result;
+          const base64 = result.split(',')[1] || result;
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // Insert new user with photo as base64
+    userForm.onsubmit = async (e) => {
+      e.preventDefault();
+      messageDiv.textContent = '';
+      messageDiv.className = '';
+      const email = document.getElementById('email').value;
+      const name = document.getElementById('name').value;
+      const mobile = document.getElementById('mobile').value;
+      const photoFile = photoInput.files[0];
+      let profile_photo_data = null;
+      if (photoFile) {
+        try {
+          profile_photo_data = await readFileAsBase64(photoFile);
+        } catch (err) {
+          messageDiv.textContent = 'Photo read failed: ' + err.message;
+          messageDiv.className = 'error';
+          return;
+        }
+      }
+      const { error } = await supabase.from('users').insert([
+        { email, name, mobile, profile_photo_data }
+      ]);
+      if (error) {
+        messageDiv.textContent = error.message;
+        messageDiv.className = 'error';
+        return;
+      }
+      messageDiv.textContent = 'User created successfully!';
+      messageDiv.className = 'success';
+      userForm.reset();
+      loadUsers();
+    };
+
+    // Edit user (set editingUserId and reload)
+    window.editUser = function(userId) {
+      editingUserId = userId;
+      loadUsers();
+    };
+
+    // Cancel edit
+    window.cancelEditUser = function() {
+      editingUserId = null;
+      loadUsers();
+    };
+
+    // Save edit (name, mobile, and photo)
+    window.saveEditUser = async function(userId) {
+      const name = document.getElementById(`edit-name-${userId}`).value;
+      const mobile = document.getElementById(`edit-mobile-${userId}`).value;
+      const photoInputEdit = editPhotoInputRefs[userId];
+      let updateObj = { name, mobile };
+      if (photoInputEdit && photoInputEdit.files && photoInputEdit.files[0]) {
+        try {
+          updateObj.profile_photo_data = await readFileAsBase64(photoInputEdit.files[0]);
+        } catch (err) {
+          messageDiv.textContent = 'Photo read failed: ' + err.message;
+          messageDiv.className = 'error';
+          return;
+        }
+      }
+      const { error } = await supabase.from('users').update(updateObj).eq('id', userId);
+      if (error) {
+        messageDiv.textContent = error.message;
+        messageDiv.className = 'error';
+        return;
+      }
+      messageDiv.textContent = 'User updated successfully!';
+      messageDiv.className = 'success';
+      editingUserId = null;
+      loadUsers();
+    };
+
+    // Initial load
+    loadUsers();
+  </script>
+</body>
+</html> 
