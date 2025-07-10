@@ -28,6 +28,7 @@
       <a href="#" style="color: #fff; text-decoration: none; margin-right: 1.5em; font-weight: 500;">Users</a>
       <a href="#" style="color: #fff; text-decoration: none; font-weight: 500;">Settings</a>
     </nav>
+    <div id="live-time" style="font-size: 1.2em; font-weight: 500; letter-spacing: 1px;"></div>
   </header>
   <main style="min-height: 70vh; margin: 0 auto; max-width: 900px; background: #fff; padding: 2em 2em 1em 2em; border-radius: 0 0 8px 8px; box-shadow: 0 2px 16px rgba(0,0,0,0.03);">
   <h1>Users List & Insert</h1>
@@ -51,7 +52,7 @@
   <h2>All Users</h2>
   <table id="users-table">
     <thead>
-      <tr><th>Photo</th><th>Email</th><th>Name</th><th>Mobile</th><th>Created At</th><th>Actions</th></tr>
+      <tr><th>Photo</th><th>Email</th><th>Name</th><th>Mobile</th><th>Device Name</th><th>Created At</th><th>Actions</th></tr>
     </thead>
     <tbody></tbody>
   </table>
@@ -69,6 +70,9 @@
 
     let editingUserId = null;
     let editPhotoInputRefs = {};
+    // Track intervals and Loc Start state for each user
+    const userLocationIntervals = {};
+    const userLocationActive = {};
 
     // Helper to render photo from base64
     function renderPhoto(photoBase64) {
@@ -103,6 +107,7 @@
             <td>${user.email}</td>
             <td><input type="text" value="${user.name || ''}" id="edit-name-${user.id}" /></td>
             <td><input type="text" value="${user.mobile || ''}" id="edit-mobile-${user.id}" /></td>
+            <td>${user.device_name || ''}</td>
             <td>${user.created_at ? new Date(user.created_at).toLocaleString() : ''}</td>
             <td>
               <button class="action-btn" onclick="saveEditUser('${user.id}')">Save</button>
@@ -116,19 +121,39 @@
           // Normal row
           const tr = document.createElement('tr');
           const hasLatLon = user.latitude !== null && user.longitude !== null && user.latitude !== undefined && user.longitude !== undefined;
+          const locStartId = `loc-start-${user.id}`;
+          const locStopId = `loc-stop-${user.id}`;
           tr.innerHTML = `
             <td>${renderPhoto(user.profile_photo_data)}</td>
             <td>${user.email}</td>
             <td>${user.name || ''}</td>
             <td>${user.mobile || ''}</td>
+            <td>${user.device_name || ''}</td>
             <td>${user.created_at ? new Date(user.created_at).toLocaleString() : ''}</td>
             <td>
               <button class="action-btn" onclick="editUser('${user.id}')">Edit</button>
-              <button class="action-btn" onclick="updateUserLocation('${user.email}')">Location</button>
+              <button class="action-btn" id="${locStartId}" onclick="startUserLocation('${user.id}', '${user.email}')">Loc Start</button>
+              <button class="action-btn" id="${locStopId}" onclick="stopUserLocation('${user.id}')" style="display: none;">Loc Stop</button>
               <button class="action-btn" onclick="viewOnMap(${user.latitude}, ${user.longitude})" ${hasLatLon ? '' : 'disabled'}>View on Map</button>
             </td>
           `;
           usersTableBody.appendChild(tr);
+          // Restore Loc Start/Stop button state after table refresh
+          setTimeout(() => {
+            const startBtn = document.getElementById(locStartId);
+            const stopBtn = document.getElementById(locStopId);
+            if (userLocationActive[user.id]) {
+              if (startBtn) startBtn.style.display = 'none';
+              if (stopBtn) stopBtn.style.display = 'inline-block';
+              // If interval is not running, restart it
+              if (!userLocationIntervals[user.id]) {
+                window.startUserLocation(user.id, user.email, true);
+              }
+            } else {
+              if (startBtn) startBtn.style.display = 'inline-block';
+              if (stopBtn) stopBtn.style.display = 'none';
+            }
+          }, 0);
         }
       });
     }
@@ -223,32 +248,60 @@
     // Initial load
     loadUsers();
 
-    // Update user's location when Location button is clicked
-    window.updateUserLocation = function(userEmail) {
+    // Start updating user's location every 30 seconds
+    window.startUserLocation = function(userId, userEmail, restoreOnly) {
       if (!navigator.geolocation) {
         messageDiv.textContent = 'Geolocation is not supported by this browser.';
         messageDiv.className = 'error';
         return;
       }
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        const { error } = await supabase
-          .from('users')
-          .update({ latitude: lat, longitude: lon })
-          .eq('email', userEmail);
-        if (error) {
-          messageDiv.textContent = 'Location update error: ' + error.message;
+      userLocationActive[userId] = true;
+      // Hide Loc Start, show Loc Stop
+      const startBtn = document.getElementById(`loc-start-${userId}`);
+      const stopBtn = document.getElementById(`loc-stop-${userId}`);
+      if (startBtn) startBtn.style.display = 'none';
+      if (stopBtn) stopBtn.style.display = 'inline-block';
+      // Immediately update location, then set interval
+      const updateLocation = () => {
+        navigator.geolocation.getCurrentPosition(async (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          const deviceName = navigator.userAgent;
+          const { error } = await supabase
+            .from('users')
+            .update({ latitude: lat, longitude: lon, device_name: deviceName })
+            .eq('email', userEmail);
+          if (error) {
+            messageDiv.textContent = 'Location update error: ' + error.message;
+            messageDiv.className = 'error';
+          } else {
+            messageDiv.textContent = 'Location updated!';
+            messageDiv.className = 'success';
+            // Do NOT call loadUsers() here to avoid resetting intervals and button states
+          }
+        }, (err) => {
+          messageDiv.textContent = 'Geolocation error: ' + err.message;
           messageDiv.className = 'error';
-        } else {
-          messageDiv.textContent = 'Location updated!';
-          messageDiv.className = 'success';
-          loadUsers();
-        }
-      }, (err) => {
-        messageDiv.textContent = 'Geolocation error: ' + err.message;
-        messageDiv.className = 'error';
-      });
+        });
+      };
+      if (!restoreOnly) updateLocation();
+      if (!userLocationIntervals[userId]) {
+        userLocationIntervals[userId] = setInterval(updateLocation, 30000);
+      }
+    }
+
+    // Stop updating user's location
+    window.stopUserLocation = function(userId) {
+      if (userLocationIntervals[userId]) {
+        clearInterval(userLocationIntervals[userId]);
+        delete userLocationIntervals[userId];
+      }
+      userLocationActive[userId] = false;
+      // Show Loc Start, hide Loc Stop
+      document.getElementById(`loc-start-${userId}`).style.display = 'inline-block';
+      document.getElementById(`loc-stop-${userId}`).style.display = 'none';
+      messageDiv.textContent = 'Location updates stopped.';
+      messageDiv.className = 'success';
     }
 
     // Open Google Maps at the given coordinates
@@ -257,6 +310,16 @@
       const url = `https://www.google.com/maps?q=${lat},${lon}`;
       window.open(url, '_blank');
     }
+
+    // Live time display
+    function updateLiveTime() {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const dateString = now.toLocaleDateString();
+      document.getElementById('live-time').textContent = `${dateString} ${timeString}`;
+    }
+    setInterval(updateLiveTime, 1000);
+    updateLiveTime();
   </script>
   </main>
   <footer style="background: #2d3e50; color: #fff; text-align: center; padding: 1.2em 0; font-size: 1em; margin-top: 2em; border-radius: 0 0 8px 8px;">
