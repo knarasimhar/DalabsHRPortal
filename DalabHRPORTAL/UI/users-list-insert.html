@@ -115,6 +115,7 @@
         } else {
           // Normal row
           const tr = document.createElement('tr');
+          const hasLatLon = user.latitude !== null && user.longitude !== null && user.latitude !== undefined && user.longitude !== undefined;
           tr.innerHTML = `
             <td>${renderPhoto(user.profile_photo_data)}</td>
             <td>${user.email}</td>
@@ -123,6 +124,8 @@
             <td>${user.created_at ? new Date(user.created_at).toLocaleString() : ''}</td>
             <td>
               <button class="action-btn" onclick="editUser('${user.id}')">Edit</button>
+              <button class="action-btn" onclick="updateUserLocation('${user.email}')">Location</button>
+              <button class="action-btn" onclick="viewOnMap(${user.latitude}, ${user.longitude})" ${hasLatLon ? '' : 'disabled'}>View on Map</button>
             </td>
           `;
           usersTableBody.appendChild(tr);
@@ -219,6 +222,41 @@
 
     // Initial load
     loadUsers();
+
+    // Update user's location when Location button is clicked
+    window.updateUserLocation = function(userEmail) {
+      if (!navigator.geolocation) {
+        messageDiv.textContent = 'Geolocation is not supported by this browser.';
+        messageDiv.className = 'error';
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        const { error } = await supabase
+          .from('users')
+          .update({ latitude: lat, longitude: lon })
+          .eq('email', userEmail);
+        if (error) {
+          messageDiv.textContent = 'Location update error: ' + error.message;
+          messageDiv.className = 'error';
+        } else {
+          messageDiv.textContent = 'Location updated!';
+          messageDiv.className = 'success';
+          loadUsers();
+        }
+      }, (err) => {
+        messageDiv.textContent = 'Geolocation error: ' + err.message;
+        messageDiv.className = 'error';
+      });
+    }
+
+    // Open Google Maps at the given coordinates
+    window.viewOnMap = function(lat, lon) {
+      if (lat == null || lon == null) return;
+      const url = `https://www.google.com/maps?q=${lat},${lon}`;
+      window.open(url, '_blank');
+    }
   </script>
   </main>
   <footer style="background: #2d3e50; color: #fff; text-align: center; padding: 1.2em 0; font-size: 1em; margin-top: 2em; border-radius: 0 0 8px 8px;">
