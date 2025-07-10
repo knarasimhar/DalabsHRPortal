@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HR Admin Notification Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; }
+    .sidebar { position: fixed; left: 0; top: 0; width: 230px; height: 100vh; background: #2d3a4a; color: #fff; padding-top: 32px; box-shadow: 2px 0 8px #0001; }
+    .sidebar h2 { color: #fff; text-align: center; margin-bottom: 32px; font-size: 1.2em; letter-spacing: 1px; }
+    .sidebar ul { list-style: none; padding: 0; }
+    .sidebar li { margin: 18px 0; }
+    .sidebar a { color: #fff; text-decoration: none; font-weight: 500; font-size: 1.05em; padding: 8px 32px; display: block; border-left: 4px solid transparent; transition: background 0.2s, border-color 0.2s; }
+    .sidebar a:hover, .sidebar a.active { background: #1a2533; border-left: 4px solid #1a73e8; }
+    .main { margin-left: 250px; padding: 40px 32px; }
+    .container { max-width: 800px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 32px; }
+    h1 { color: #2d3a4a; }
+    .back-dashboard {
+      display: inline-block;
+      margin-bottom: 24px;
+      color: #1a73e8;
+      background: #e3f0fd;
+      padding: 8px 18px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1em;
+      transition: background 0.2s, color 0.2s;
+    }
+    .back-dashboard:hover {
+      background: #1a73e8;
+      color: #fff;
+    }
+    @media (max-width: 700px) {
+      .sidebar { position: static; width: 100%; height: auto; box-shadow: none; }
+      .main { margin-left: 0; padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <h2>HR Admin Notification</h2>
+    <ul>
+      <li><a href="dashboard.html" class="active">Dashboard</a></li>
+      <li><a href="wish-celebration.html">Wish Celebration</a></li>
+      <li><a href="announcements.html">HR & Management Announcements</a></li>
+      <li><a href="share-reports.html">Share Reports/Photos/Newsletters</a></li>
+    </ul>
+  </nav>
+  <div class="main">
+    <div class="container">
+      <a href="../dashboard.html" class="back-dashboard">&larr; Back to Main Dashboard</a>
+      <h1>HR Admin Notification Dashboard</h1>
+      <p>Overview and quick access to HR Admin Notification features: greetings, announcements, and sharing updates.</p>
+    </div>
+  </div>
+</body>
+</html> 

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HR Portal - Navigation & Screens</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f7f7f7; }
+    .container { max-width: 1200px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 32px; }
+    h1, h2, h3 { color: #2d3a4a; }
+    .sidebar { float: left; width: 260px; background: #f0f4f8; border-radius: 8px; padding: 24px; margin-right: 32px; }
+    .sidebar ul { list-style: none; padding: 0; }
+    .sidebar li { margin-bottom: 16px; }
+    .sidebar a { color: #1a73e8; text-decoration: none; font-weight: bold; }
+    .screens { overflow: hidden; }
+    .screen { margin-bottom: 32px; }
+    .screen h3 { margin-top: 0; }
+    .tree { background: #e9f5e1; padding: 12px; border-radius: 6px; margin: 8px 0; }
+    .note { color: #888; font-size: 0.95em; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>HR Portal Navigation & Screens</h1>
+    <div class="sidebar">
+      <h2>Navigation</h2>
+      <ul>
+        <li><a href="#dashboard">Dashboard</a></li>
+        <li><a href="#employee-master">Employee Master</a></li>
+        <li><a href="#bulk-operations">Bulk Operations</a></li>
+        <li><a href="#documents">Employee Documents</a></li>
+        <li><a href="#kyc">KYC Management</a></li>
+        <li><a href="#bank-details">Bank Details</a></li>
+        <li><a href="#statutory">Statutory Details</a></li>
+        <li><a href="#positions-tree">Positions Tree</a></li>
+        <li><a href="#assets">Assets Management</a></li>
+        <li><a href="#profile">Profile Management</a></li>
+        <li><a href="#alerts">Alerts & Approvals</a></li>
+        <li><a href="#manager-replacement">Manager Replacement</a></li>
+        <li><a href="#employee-self-service">Employee Self-Service</a></li>
+      </ul>
+    </div>
+    <div class="screens">
+      <div class="screen" id="dashboard">
+        <h3>Dashboard</h3>
+        <p>Overview of HR metrics, pending approvals, alerts, and quick links to key actions.</p>
+      </div>
+      <div class="screen" id="employee-master">
+        <h3>Employee Master</h3>
+        <ul>
+          <li>Add, edit, search, and delete employee records</li>
+          <li>Employee Code generation</li>
+          <li>Profile Picture upload</li>
+          <li>Maintain full employee profile (personal, contact, employment, family, education, past employment, etc.)</li>
+          <li>Notice Period (Employer & Employee)</li>
+          <li>Approval workflow for master changes</li>
+        </ul>
+      </div>
+      <div class="screen" id="bulk-operations">
+        <h3>Bulk Operations</h3>
+        <ul>
+          <li>Import/export employee details and reports</li>
+          <li>Bulk upload from Excel</li>
+        </ul>
+      </div>
+      <div class="screen" id="documents">
+        <h3>Employee Documents</h3>
+        <ul>
+          <li>Upload employee contracts, IDs, certificates</li>
+          <li>Upload and manage employee KYC documents (Aadhar, PAN, DL, Election Card, Passport)</li>
+          <li>PAN No sequence validation & duplicate alert</li>
+        </ul>
+      </div>
+      <div class="screen" id="kyc">
+        <h3>KYC Management</h3>
+        <ul>
+          <li>Upload and verify KYC documents</li>
+          <li>Alert for duplicate PAN entry</li>
+        </ul>
+      </div>
+      <div class="screen" id="bank-details">
+        <h3>Bank Details</h3>
+        <ul>
+          <li>Employee bank account for salary and reimbursement</li>
+        </ul>
+      </div>
+      <div class="screen" id="statutory">
+        <h3>Statutory Details</h3>
+        <ul>
+          <li>Eligibility for PF/ESIC/EPS/NPS deduction</li>
+          <li>Gratuity start date, PF start date</li>
+        </ul>
+      </div>
+      <div class="screen" id="positions-tree">
+        <h3>Positions Tree</h3>
+        <div class="tree">
+          <strong>Filled Positions</strong> displayed in a tree structure by project and location.
+        </div>
+      </div>
+      <div class="screen" id="assets">
+        <h3>Assets Management</h3>
+        <ul>
+          <li>Enter and track organization assets issued (laptop, mobile, accessories)</li>
+        </ul>
+      </div>
+      <div class="screen" id="profile">
+        <h3>Profile Management</h3>
+        <ul>
+          <li>Maintain employee profile data (email, mobile, department, designation, branch, location, grade, address, family, emergency contact, education, languages, past employment)</li>
+        </ul>
+      </div>
+      <div class="screen" id="alerts">
+        <h3>Alerts & Approvals</h3>
+        <ul>
+          <li>Alerts for probation review, appraisal, notice period, documentation gaps</li>
+          <li>Approval workflow for employee master changes</li>
+        </ul>
+      </div>
+      <div class="screen" id="manager-replacement">
+        <h3>Manager Replacement</h3>
+        <ul>
+          <li>Replace Approving Manager & Reporting Manager</li>
+        </ul>
+      </div>
+      <div class="screen" id="employee-self-service">
+        <h3>Employee Self-Service</h3>
+        <ul>
+          <li>Upload profile picture</li>
+          <li>View personal and employment details</li>
+          <li>Compensatory off configuration (if required)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html> 

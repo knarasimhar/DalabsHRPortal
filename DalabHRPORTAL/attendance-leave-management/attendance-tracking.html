@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance Tracking - HR Portal</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; }
+    .sidebar { position: fixed; left: 0; top: 0; width: 230px; height: 100vh; background: #2d3a4a; color: #fff; padding-top: 32px; box-shadow: 2px 0 8px #0001; }
+    .sidebar h2 { color: #fff; text-align: center; margin-bottom: 32px; font-size: 1.3em; letter-spacing: 1px; }
+    .sidebar ul { list-style: none; padding: 0; }
+    .sidebar li { margin: 18px 0; }
+    .sidebar a { color: #fff; text-decoration: none; font-weight: 500; font-size: 1.05em; padding: 8px 32px; display: block; border-left: 4px solid transparent; transition: background 0.2s, border-color 0.2s; }
+    .sidebar a:hover, .sidebar a.active { background: #1a2533; border-left: 4px solid #1a73e8; }
+    .main { margin-left: 250px; padding: 40px 32px; }
+    .container { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 32px; }
+    h1 { color: #2d3a4a; }
+    .form-section { margin-top: 32px; }
+    .form-group { margin-bottom: 20px; display: flex; align-items: center; }
+    .form-group label { width: 180px; font-weight: 500; color: #2d3a4a; }
+    .form-group input, .form-group select { flex: 1; padding: 8px 12px; border: 1px solid #cfd8dc; border-radius: 4px; font-size: 1em; }
+    .form-actions { text-align: right; margin-top: 24px; }
+    .form-actions button { background: #1a73e8; color: #fff; border: none; padding: 10px 28px; border-radius: 4px; font-size: 1em; cursor: pointer; transition: background 0.2s; }
+    .form-actions button:hover { background: #155ab6; }
+    @media (max-width: 700px) {
+      .sidebar { position: static; width: 100%; height: auto; box-shadow: none; }
+      .main { margin-left: 0; padding: 16px; }
+      .form-group { flex-direction: column; align-items: flex-start; }
+      .form-group label { width: 100%; margin-bottom: 6px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <h2>Attendance & Leave</h2>
+    <ul>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="attendance-policy.html">Attendance Policy</a></li>
+      <li><a href="attendance-tracking.html" class="active">Attendance Tracking</a></li>
+      <li><a href="leave-management.html">Leave Management</a></li>
+      <li><a href="leave-application.html">Leave Application</a></li>
+      <li><a href="leave-approval.html">Leave Approval</a></li>
+      <li><a href="timesheet.html">Timesheet</a></li>
+      <li><a href="reports.html">Reports</a></li>
+      <li><a href="mobile-app.html">Mobile App</a></li>
+      <li><a href="geo-fencing.html">Geo-fencing</a></li>
+      <li><a href="analytics.html">Analytics</a></li>
+    </ul>
+  </nav>
+  <div class="main">
+    <div class="container">
+      <h1>Attendance Tracking</h1>
+      <p>Track employee attendance with biometric integration, manual entry, and remote attendance options.</p>
+      <form class="form-section">
+        <div class="form-group">
+          <label for="employee">Employee</label>
+          <input type="text" id="employee" name="employee" placeholder="Enter employee name or ID">
+        </div>
+        <div class="form-group">
+          <label for="attendanceType">Attendance Type</label>
+          <select id="attendanceType" name="attendanceType">
+            <option value="biometric">Biometric</option>
+            <option value="manual">Manual</option>
+            <option value="remote">Remote (Selfie)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="timeIn">Time In</label>
+          <input type="time" id="timeIn" name="timeIn">
+        </div>
+        <div class="form-group">
+          <label for="timeOut">Time Out</label>
+          <input type="time" id="timeOut" name="timeOut">
+        </div>
+        <div class="form-group">
+          <label for="location">Location</label>
+          <select id="location" name="location">
+            <option value="office">Office</option>
+            <option value="remote">Remote</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="selfieUpload">Selfie Upload (Remote)</label>
+          <input type="file" id="selfieUpload" name="selfieUpload" accept="image/*">
+        </div>
+        <div class="form-group">
+          <label for="remarks">Remarks</label>
+          <input type="text" id="remarks" name="remarks" placeholder="Enter any remarks">
+        </div>
+        <div class="form-actions">
+          <button type="submit">Record Attendance</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html> 

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KYC Management - HR Portal</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; }
+    .sidebar { position: fixed; left: 0; top: 0; width: 230px; height: 100vh; background: #2d3a4a; color: #fff; padding-top: 32px; box-shadow: 2px 0 8px #0001; }
+    .sidebar h2 { color: #fff; text-align: center; margin-bottom: 32px; font-size: 1.3em; letter-spacing: 1px; }
+    .sidebar ul { list-style: none; padding: 0; }
+    .sidebar li { margin: 18px 0; }
+    .sidebar a { color: #fff; text-decoration: none; font-weight: 500; font-size: 1.05em; padding: 8px 32px; display: block; border-left: 4px solid transparent; transition: background 0.2s, border-color 0.2s; }
+    .sidebar a:hover, .sidebar a.active { background: #1a2533; border-left: 4px solid #1a73e8; }
+    .main { margin-left: 250px; padding: 40px 32px; }
+    .container { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 32px; }
+    h1 { color: #2d3a4a; }
+    .form-section { margin-top: 32px; }
+    .form-group { margin-bottom: 20px; display: flex; align-items: center; }
+    .form-group label { width: 180px; font-weight: 500; color: #2d3a4a; }
+    .form-group input, .form-group select { flex: 1; padding: 8px 12px; border: 1px solid #cfd8dc; border-radius: 4px; font-size: 1em; }
+    .form-actions { text-align: right; margin-top: 24px; }
+    .form-actions button { background: #1a73e8; color: #fff; border: none; padding: 10px 28px; border-radius: 4px; font-size: 1em; cursor: pointer; transition: background 0.2s; }
+    .form-actions button:hover { background: #155ab6; }
+    @media (max-width: 700px) {
+      .sidebar { position: static; width: 100%; height: auto; box-shadow: none; }
+      .main { margin-left: 0; padding: 16px; }
+      .form-group { flex-direction: column; align-items: flex-start; }
+      .form-group label { width: 100%; margin-bottom: 6px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="sidebar">
+    <h2>HR Portal</h2>
+    <ul>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="employee-master.html">Employee Master</a></li>
+      <li><a href="bulk-operations.html">Bulk Operations</a></li>
+      <li><a href="documents.html">Employee Documents</a></li>
+      <li><a href="kyc.html" class="active">KYC Management</a></li>
+      <li><a href="bank-details.html">Bank Details</a></li>
+      <li><a href="statutory.html">Statutory Details</a></li>
+      <li><a href="positions-tree.html">Positions Tree</a></li>
+      <li><a href="assets.html">Assets Management</a></li>
+      <li><a href="profile.html">Profile Management</a></li>
+      <li><a href="alerts.html">Alerts & Approvals</a></li>
+      <li><a href="manager-replacement.html">Manager Replacement</a></li>
+      <li><a href="employee-self-service.html">Employee Self-Service</a></li>
+    </ul>
+  </nav>
+  <div class="main">
+    <div class="container">
+      <h1>KYC Management</h1>
+      <p>Upload and verify KYC documents. Alert for duplicate PAN entry.</p>
+      <form class="form-section">
+        <div class="form-group">
+          <label for="kycType">KYC Document Type</label>
+          <select id="kycType" name="kycType">
+            <option value="aadhaar">Aadhaar Card</option>
+            <option value="pan">PAN Card</option>
+            <option value="dl">Driving License</option>
+            <option value="passport">Passport</option>
+            <option value="election">Election Card</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="kycFile">Upload KYC Document</label>
+          <input type="file" id="kycFile" name="kycFile">
+        </div>
+        <div class="form-group">
+          <label for="panNo">PAN Number</label>
+          <input type="text" id="panNo" name="panNo" placeholder="Enter PAN number">
+        </div>
+        <div class="form-actions">
+          <button type="submit">Upload KYC</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html> 
