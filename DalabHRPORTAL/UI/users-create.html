@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create User - Supabase Users Table</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    label { display: block; margin-top: 1em; }
+    input, button { margin-top: 0.5em; }
+    #message { margin-top: 1em; }
+    #message.success { color: green; }
+    #message.error { color: red; }
+  </style>
+</head>
+<body>
+  <h1>Create User</h1>
+  <form id="user-form">
+    <label>Email:
+      <input type="email" id="email" required />
+    </label>
+    <label>Name:
+      <input type="text" id="name" required />
+    </label>
+    <button type="submit">Add User</button>
+  </form>
+  <div id="message"></div>
+
+  <script>
+    // Replace with your Supabase project credentials
+    const SUPABASE_URL = 'https://wtcxhhbigmqrmqdyhzcz.supabase.co';
+    const SUPABASE_ANON_KEY = 'your-anon-key'; // <-- Replace this
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const userForm = document.getElementById('user-form');
+    const messageDiv = document.getElementById('message');
+
+    userForm.onsubmit = async (e) => {
+      e.preventDefault();
+      messageDiv.textContent = '';
+      messageDiv.className = '';
+      const email = document.getElementById('email').value;
+      const name = document.getElementById('name').value;
+
+      // Insert into users table
+      const { error } = await supabase.from('users').insert([
+        { email, name }
+      ]);
+      if (error) {
+        messageDiv.textContent = error.message;
+        messageDiv.className = 'error';
+        return;
+      }
+      messageDiv.textContent = 'User created successfully!';
+      messageDiv.className = 'success';
+      userForm.reset();
+    };
+  </script>
+</body>
+</html> 
