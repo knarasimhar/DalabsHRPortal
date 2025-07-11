@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supabase Sample: Auth & Message</title>
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    .hidden { display: none; }
+    label { display: block; margin-top: 1em; }
+    input, button { margin-top: 0.5em; }
+    #status { margin-top: 1em; color: green; }
+    #error { margin-top: 1em; color: red; }
+  </style>
+</head>
+<body>
+  <h1>Supabase Sample: Auth & Message</h1>
+
+  <!-- Login Form -->
+  <div id="login-section">
+    <h2>Login</h2>
+    <label>Email:
+      <input type="email" id="email" required />
+    </label>
+    <label>Password:
+      <input type="password" id="password" required />
+    </label>
+    <button id="login-btn">Login</button>
+    <div id="login-error" style="color:red;"></div>
+  </div>
+
+  <!-- Message Form (hidden until logged in) -->
+  <div id="message-section" class="hidden">
+    <h2>Send a Message</h2>
+    <label>Message:
+      <input type="text" id="message" required />
+    </label>
+    <button id="send-btn">Send</button>
+    <div id="status"></div>
+    <div id="error"></div>
+    <button id="logout-btn" style="margin-top:2em;">Logout</button>
+  </div>
+
+  <script>
+    // TODO: Replace with your Supabase project credentials
+    const SUPABASE_URL = 'https://your-project.supabase.co';
+    const SUPABASE_ANON_KEY = 'your-anon-key';
+
+    // Initialize Supabase client
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Elements
+    const loginSection = document.getElementById('login-section');
+    const messageSection = document.getElementById('message-section');
+    const loginBtn = document.getElementById('login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const sendBtn = document.getElementById('send-btn');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const messageInput = document.getElementById('message');
+    const statusDiv = document.getElementById('status');
+    const errorDiv = document.getElementById('error');
+    const loginErrorDiv = document.getElementById('login-error');
+
+    // Show/hide sections based on auth state
+    function setAuthState(isLoggedIn) {
+      if (isLoggedIn) {
+        loginSection.classList.add('hidden');
+        messageSection.classList.remove('hidden');
+      } else {
+        loginSection.classList.remove('hidden');
+        messageSection.classList.add('hidden');
+      }
+    }
+
+    // Check initial auth state
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setAuthState(!!session);
+    });
+
+    // Login handler
+    loginBtn.onclick = async () => {
+      loginErrorDiv.textContent = '';
+      const email = emailInput.value;
+      const password = passwordInput.value;
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        loginErrorDiv.textContent = error.message;
+      } else {
+        setAuthState(true);
+      }
+    };
+
+    // Logout handler
+    logoutBtn.onclick = async () => {
+      await supabase.auth.signOut();
+      setAuthState(false);
+      emailInput.value = '';
+      passwordInput.value = '';
+      messageInput.value = '';
+      statusDiv.textContent = '';
+      errorDiv.textContent = '';
+    };
+
+    // Send message handler
+    sendBtn.onclick = async () => {
+      statusDiv.textContent = '';
+      errorDiv.textContent = '';
+      const content = messageInput.value;
+      if (!content) {
+        errorDiv.textContent = 'Message cannot be empty.';
+        return;
+      }
+      const { error } = await supabase.from('messages').insert([{ content }]);
+      if (error) {
+        errorDiv.textContent = error.message;
+      } else {
+        statusDiv.textContent = 'Message sent!';
+        messageInput.value = '';
+      }
+    };
+
+    // Listen for auth state changes
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthState(!!session);
+    });
+  </script>
+</body>
+</html> 

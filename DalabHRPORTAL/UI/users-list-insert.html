@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Users List & Insert - Supabase</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body { font-family: Arial, sans-serif; margin: 2em; }
     table { border-collapse: collapse; width: 100%; margin-top: 2em; }
@@ -18,6 +19,17 @@
     .edit-row input { width: 90%; }
     .action-btn { margin-right: 0.5em; }
     .profile-photo { width: 48px; height: 48px; object-fit: cover; border-radius: 50%; border: 1px solid #aaa; }
+    .loc-start-btn { background-color: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    .loc-start-btn:hover { background-color: #218838; }
+    .loc-stop-btn { background-color: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    .loc-stop-btn:hover { background-color: #c82333; }
+    .map-btn { background-color: #007bff; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    .map-btn:hover { background-color: #0056b3; }
+    .map-btn:disabled { background-color: #6c757d; cursor: not-allowed; }
+    .edit-btn { background-color: #ffc107; color: #212529; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    .edit-btn:hover { background-color: #e0a800; }
+    .history-btn { background-color: #17a2b8; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    .history-btn:hover { background-color: #138496; }
   </style>
 </head>
 <body>
@@ -26,33 +38,66 @@
     <nav>
       <a href="#" style="color: #fff; text-decoration: none; margin-right: 1.5em; font-weight: 500;">Home</a>
       <a href="#" style="color: #fff; text-decoration: none; margin-right: 1.5em; font-weight: 500;">Users</a>
+      <a href="location-history-map.html" style="color: #fff; text-decoration: none; margin-right: 1.5em; font-weight: 500;">Location Map</a>
       <a href="#" style="color: #fff; text-decoration: none; font-weight: 500;">Settings</a>
     </nav>
-    <div id="live-time" style="font-size: 1.2em; font-weight: 500; letter-spacing: 1px;"></div>
+    <div style="display: flex; align-items: center; gap: 1em;">
+      <button id="add-user-btn" style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500;" title="Add New User">
+        <i class="fas fa-plus"></i> Add User
+      </button>
+      <div id="live-time" style="font-size: 1.2em; font-weight: 500; letter-spacing: 1px;"></div>
+      <button id="logoutBtn" style="background: #dc3545; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
+    </div>
   </header>
   <main style="min-height: 70vh; margin: 0 auto; max-width: 900px; background: #fff; padding: 2em 2em 1em 2em; border-radius: 0 0 8px 8px; box-shadow: 0 2px 16px rgba(0,0,0,0.03);">
-  <h1>Users List & Insert</h1>
-  <form id="user-form">
-    <label>Email:
-      <input type="email" id="email" required />
-    </label>
-    <label>Name:
-      <input type="text" id="name" required />
-    </label>
-    <label>Mobile:
-      <input type="text" id="mobile" required />
-    </label>
-    <label>Profile Photo:
-      <input type="file" id="photo" accept="image/*" />
-    </label>
-    <button type="submit">Add User</button>
-  </form>
+  <!-- Removed <h1>Users List</h1> and <h2>All Users</h2> -->
+  
+  <!-- Add User Modal -->
+  <div id="add-user-modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+    <div style="background-color: #fefefe; margin: 5% auto; padding: 2em; border-radius: 8px; width: 80%; max-width: 500px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5em;">
+        <h2 style="margin: 0; color: #2d3e50;">Add New User</h2>
+        <button id="close-modal" style="background: none; border: none; font-size: 1.5em; cursor: pointer; color: #666;">&times;</button>
+      </div>
+      
+      <form id="user-form">
+        <div style="margin-bottom: 1em;">
+          <label style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333;">Email:</label>
+          <input type="email" id="email" required style="width: 100%; padding: 0.75em; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;" />
+        </div>
+        
+        <div style="margin-bottom: 1em;">
+          <label style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333;">Name:</label>
+          <input type="text" id="name" required style="width: 100%; padding: 0.75em; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;" />
+        </div>
+        
+        <div style="margin-bottom: 1em;">
+          <label style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333;">Mobile:</label>
+          <input type="text" id="mobile" required style="width: 100%; padding: 0.75em; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;" />
+        </div>
+        
+        <div style="margin-bottom: 1.5em;">
+          <label style="display: block; margin-bottom: 0.5em; font-weight: 500; color: #333;">Profile Photo:</label>
+          <input type="file" id="photo" accept="image/*" style="width: 100%; padding: 0.5em; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;" />
+        </div>
+        
+        <div style="display: flex; gap: 1em; justify-content: flex-end;">
+          <button type="button" id="cancel-add" style="background: #6c757d; color: white; border: none; padding: 0.75em 1.5em; border-radius: 4px; cursor: pointer; font-size: 14px;">Cancel</button>
+          <button type="submit" style="background: #28a745; color: white; border: none; padding: 0.75em 1.5em; border-radius: 4px; cursor: pointer; font-size: 14px;">Add User</button>
+        </div>
+      </form>
+      
+      <div id="message" style="margin-top: 1em;"></div>
+    </div>
+  </div>
+
   <div id="message"></div>
 
-  <h2>All Users</h2>
   <table id="users-table">
     <thead>
-      <tr><th>Photo</th><th>Email</th><th>Name</th><th>Mobile</th><th>Device Name</th><th>Created At</th><th>Actions</th></tr>
+      <tr><th>Photo</th><th>Email</th><th>Name</th><th>Mobile</th><th>Device Name</th><th>Created At</th><th>Updated At</th><th>Actions</th></tr>
     </thead>
     <tbody></tbody>
   </table>
@@ -67,6 +112,11 @@
     const messageDiv = document.getElementById('message');
     const usersTableBody = document.querySelector('#users-table tbody');
     const photoInput = document.getElementById('photo');
+    const addUserBtn = document.getElementById('add-user-btn');
+    const addUserModal = document.getElementById('add-user-modal');
+    const closeModal = document.getElementById('close-modal');
+    const cancelAdd = document.getElementById('cancel-add');
+    const logoutBtn = document.getElementById('logoutBtn');
 
     let editingUserId = null;
     let editPhotoInputRefs = {};
@@ -74,22 +124,90 @@
     const userLocationIntervals = {};
     const userLocationActive = {};
 
+    // Modal functionality
+    addUserBtn.addEventListener('click', () => {
+      addUserModal.style.display = 'block';
+    });
+
+    closeModal.addEventListener('click', () => {
+      addUserModal.style.display = 'none';
+      userForm.reset();
+      messageDiv.textContent = '';
+      messageDiv.className = '';
+    });
+
+    cancelAdd.addEventListener('click', () => {
+      addUserModal.style.display = 'none';
+      userForm.reset();
+      messageDiv.textContent = '';
+      messageDiv.className = '';
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', (event) => {
+      if (event.target === addUserModal) {
+        addUserModal.style.display = 'none';
+        userForm.reset();
+        messageDiv.textContent = '';
+        messageDiv.className = '';
+      }
+    });
+
     // Helper to render photo from base64
     function renderPhoto(photoBase64) {
       if (!photoBase64) return '';
-      return `<img src="data:image/png;base64,${photoBase64}" class="profile-photo" />`;
+      // Try to detect image format from the base64 data
+      let mimeType = 'image/jpeg'; // default
+      
+      // Check if the base64 data starts with common image signatures
+      if (photoBase64.startsWith('/9j/')) {
+        mimeType = 'image/jpeg';
+      } else if (photoBase64.startsWith('iVBORw0KGgo')) {
+        mimeType = 'image/png';
+      } else if (photoBase64.startsWith('R0lGODlh')) {
+        mimeType = 'image/gif';
+      } else if (photoBase64.startsWith('UklGR')) {
+        mimeType = 'image/webp';
+      }
+      
+      return `<img src="data:${mimeType};base64,${photoBase64}" class="profile-photo" alt="Profile Photo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />`;
     }
 
-    // Fetch and display all users
+    // Fetch and display all users (with role-based filtering)
     async function loadUsers() {
-      usersTableBody.innerHTML = '<tr><td colspan="6">Loading...</td></tr>';
-      const { data, error } = await supabase.from('users').select('*').order('created_at', { ascending: false });
+      usersTableBody.innerHTML = '<tr><td colspan="8">Loading...</td></tr>';
+      // 1. Get logged-in user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+      // 2. Get user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      if (profileError || !profile) {
+        usersTableBody.innerHTML = '<tr><td colspan="8">Profile not found.</td></tr>';
+        return;
+      }
+      let data = [];
+      let error = null;
+      if (profile.user_type === 'user') {
+        data = [profile];
+      } else {
+        // admin or superadmin: fetch all users
+        const result = await supabase.from('users').select('*').order('created_at', { ascending: false });
+        data = result.data;
+        error = result.error;
+      }
       if (error) {
-        usersTableBody.innerHTML = `<tr><td colspan="6">${error.message}</td></tr>`;
+        usersTableBody.innerHTML = `<tr><td colspan="8">${error.message}</td></tr>`;
         return;
       }
       if (!data || data.length === 0) {
-        usersTableBody.innerHTML = '<tr><td colspan="6">No users found.</td></tr>';
+        usersTableBody.innerHTML = '<tr><td colspan="8">No users found.</td></tr>';
         return;
       }
       usersTableBody.innerHTML = '';
@@ -101,7 +219,7 @@
           tr.className = 'edit-row';
           tr.innerHTML = `
             <td>
-              ${renderPhoto(user.profile_photo_data)}<br/>
+              ${renderPhoto(user.profile_photo_data)}<div style="display: none; width: 48px; height: 48px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #999;"><i class="fas fa-user"></i></div><br/>
               <input type="file" accept="image/*" id="edit-photo-${user.id}" />
             </td>
             <td>${user.email}</td>
@@ -109,9 +227,10 @@
             <td><input type="text" value="${user.mobile || ''}" id="edit-mobile-${user.id}" /></td>
             <td>${user.device_name || ''}</td>
             <td>${user.created_at ? new Date(user.created_at).toLocaleString() : ''}</td>
+            <td>${user.updated_at ? new Date(user.updated_at).toLocaleString() : 'Not updated'}</td>
             <td>
-              <button class="action-btn" onclick="saveEditUser('${user.id}')">Save</button>
-              <button class="action-btn" onclick="cancelEditUser()">Cancel</button>
+              <button class="action-btn" style="background-color: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;" onclick="saveEditUser('${user.id}')" title="Save Changes"><i class="fas fa-save"></i></button>
+              <button class="action-btn" style="background-color: #6c757d; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;" onclick="cancelEditUser()" title="Cancel Edit"><i class="fas fa-times"></i></button>
             </td>
           `;
           usersTableBody.appendChild(tr);
@@ -124,34 +243,47 @@
           const locStartId = `loc-start-${user.id}`;
           const locStopId = `loc-stop-${user.id}`;
           tr.innerHTML = `
-            <td>${renderPhoto(user.profile_photo_data)}</td>
+            <td>${renderPhoto(user.profile_photo_data)}<div style="display: none; width: 48px; height: 48px; background: #f0f0f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #999;"><i class="fas fa-user"></i></div></td>
             <td>${user.email}</td>
             <td>${user.name || ''}</td>
             <td>${user.mobile || ''}</td>
             <td>${user.device_name || ''}</td>
             <td>${user.created_at ? new Date(user.created_at).toLocaleString() : ''}</td>
+            <td>${user.updated_at ? new Date(user.updated_at).toLocaleString() : 'Not updated'}</td>
             <td>
-              <button class="action-btn" onclick="editUser('${user.id}')">Edit</button>
-              <button class="action-btn" id="${locStartId}" onclick="startUserLocation('${user.id}', '${user.email}')">Loc Start</button>
-              <button class="action-btn" id="${locStopId}" onclick="stopUserLocation('${user.id}')" style="display: none;">Loc Stop</button>
-              <button class="action-btn" onclick="viewOnMap(${user.latitude}, ${user.longitude})" ${hasLatLon ? '' : 'disabled'}>View on Map</button>
+              <button class="action-btn edit-btn" onclick="editUser('${user.id}')" title="Edit User"><i class="fas fa-edit"></i></button>
+              <button class="action-btn loc-start-btn" id="${locStartId}" onclick="startUserLocation('${user.id}', '${user.email}')" title="Start Location Tracking"><i class="fas fa-location-arrow"></i></button>
+              <button class="action-btn loc-stop-btn" id="${locStopId}" onclick="stopUserLocation('${user.id}')" style="display: none;" title="Stop Location Tracking"><i class="fas fa-stop"></i></button>
+              <button class="action-btn map-btn" onclick="viewOnMap(${user.latitude}, ${user.longitude})" ${hasLatLon ? '' : 'disabled'} title="View on Map"><i class="fas fa-map-marker-alt"></i></button>
+              <button class="action-btn history-btn" onclick="window.location.href='location-history-map.html?user_id=${user.id}'" title="View Location History"><i class="fas fa-history"></i></button>
             </td>
           `;
           usersTableBody.appendChild(tr);
-          // Restore Loc Start/Stop button state after table refresh
+          // Restore Loc Start/Stop button state based on database status
           setTimeout(() => {
             const startBtn = document.getElementById(locStartId);
             const stopBtn = document.getElementById(locStopId);
-            if (userLocationActive[user.id]) {
+            
+            // Check database status first
+            if (user.location_status === 1) {
+              // Database shows active, so start tracking
+              userLocationActive[user.id] = true;
               if (startBtn) startBtn.style.display = 'none';
               if (stopBtn) stopBtn.style.display = 'inline-block';
               // If interval is not running, restart it
               if (!userLocationIntervals[user.id]) {
-                window.startUserLocation(user.id, user.email, true);
+                startUserLocation(user.id, user.email, true);
               }
             } else {
+              // Database shows inactive, so stop tracking
+              userLocationActive[user.id] = false;
               if (startBtn) startBtn.style.display = 'inline-block';
               if (stopBtn) stopBtn.style.display = 'none';
+              // Clear any existing interval
+              if (userLocationIntervals[user.id]) {
+                clearInterval(userLocationIntervals[user.id]);
+                delete userLocationIntervals[user.id];
+              }
             }
           }, 0);
         }
@@ -172,6 +304,18 @@
         reader.readAsDataURL(file);
       });
     }
+    
+    // Validate image file
+    function validateImageFile(file) {
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        throw new Error('Please select a valid image file (JPEG, PNG, GIF, or WebP)');
+      }
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        throw new Error('Image file size must be less than 5MB');
+      }
+      return true;
+    }
 
     // Insert new user with photo as base64
     userForm.onsubmit = async (e) => {
@@ -185,9 +329,10 @@
       let profile_photo_data = null;
       if (photoFile) {
         try {
+          validateImageFile(photoFile);
           profile_photo_data = await readFileAsBase64(photoFile);
         } catch (err) {
-          messageDiv.textContent = 'Photo read failed: ' + err.message;
+          messageDiv.textContent = 'Photo error: ' + err.message;
           messageDiv.className = 'error';
           return;
         }
@@ -203,6 +348,7 @@
       messageDiv.textContent = 'User created successfully!';
       messageDiv.className = 'success';
       userForm.reset();
+      addUserModal.style.display = 'none';
       loadUsers();
     };
 
@@ -226,9 +372,10 @@
       let updateObj = { name, mobile };
       if (photoInputEdit && photoInputEdit.files && photoInputEdit.files[0]) {
         try {
+          validateImageFile(photoInputEdit.files[0]);
           updateObj.profile_photo_data = await readFileAsBase64(photoInputEdit.files[0]);
         } catch (err) {
-          messageDiv.textContent = 'Photo read failed: ' + err.message;
+          messageDiv.textContent = 'Photo error: ' + err.message;
           messageDiv.className = 'error';
           return;
         }
@@ -247,6 +394,33 @@
 
     // Initial load
     loadUsers();
+    
+    // Function to initialize location tracking based on database status
+    async function initializeLocationTracking() {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, email, location_status')
+        .eq('location_status', 1);
+      
+      if (error) {
+        console.error('Error loading active users:', error);
+        return;
+      }
+      
+      // Start tracking for all users with active status
+      data.forEach(user => {
+        if (user.location_status === 1) {
+          userLocationActive[user.id] = true;
+          // Start location tracking after a short delay to ensure DOM is ready
+          setTimeout(() => {
+            startUserLocation(user.id, user.email, true);
+          }, 1000);
+        }
+      });
+    }
+    
+    // Initialize location tracking after page loads
+    setTimeout(initializeLocationTracking, 2000);
 
     // Start updating user's location every 30 seconds
     window.startUserLocation = function(userId, userEmail, restoreOnly) {
@@ -263,26 +437,59 @@
       if (stopBtn) stopBtn.style.display = 'inline-block';
       // Immediately update location, then set interval
       const updateLocation = () => {
-        navigator.geolocation.getCurrentPosition(async (position) => {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-          const deviceName = navigator.userAgent;
-          const { error } = await supabase
-            .from('users')
-            .update({ latitude: lat, longitude: lon, device_name: deviceName })
-            .eq('email', userEmail);
-          if (error) {
-            messageDiv.textContent = 'Location update error: ' + error.message;
-            messageDiv.className = 'error';
-          } else {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            const deviceName = navigator.userAgent;
+            const currentTime = new Date().toISOString();
+          
+            // Update users table with latest location
+            const { error: userError } = await supabase
+              .from('users')
+              .update({ 
+                latitude: lat, 
+                longitude: lon, 
+                device_name: deviceName,
+                updated_at: currentTime,
+                location_status: 1
+              })
+              .eq('email', userEmail);
+              
+            if (userError) {
+              messageDiv.textContent = 'Location update error: ' + userError.message;
+              messageDiv.className = 'error';
+              return;
+            }
+            
+            // Insert into location_history table
+            const { error: historyError } = await supabase
+              .from('location_history')
+              .insert([{
+                user_id: userId,
+                user_email: userEmail,
+                latitude: lat,
+                longitude: lon,
+                device_name: deviceName,
+                accuracy: position.coords.accuracy,
+                timestamp: currentTime
+              }]);
+              
+            if (historyError) {
+              console.error('Error saving location history:', historyError);
+              // Don't show error to user as main location update was successful
+            }
+            
             messageDiv.textContent = 'Location updated!';
             messageDiv.className = 'success';
             // Do NOT call loadUsers() here to avoid resetting intervals and button states
-          }
-        }, (err) => {
-          messageDiv.textContent = 'Geolocation error: ' + err.message;
-          messageDiv.className = 'error';
-        });
+          },
+          (err) => {
+            messageDiv.textContent = 'Geolocation error: ' + err.message;
+            messageDiv.className = 'error';
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
       };
       if (!restoreOnly) updateLocation();
       if (!userLocationIntervals[userId]) {
@@ -297,6 +504,22 @@
         delete userLocationIntervals[userId];
       }
       userLocationActive[userId] = false;
+      
+      // Update location status to inactive in database
+      const currentTime = new Date().toISOString();
+      supabase
+        .from('users')
+        .update({ 
+          location_status: 0,
+          updated_at: currentTime
+        })
+        .eq('id', userId)
+        .then(({ error }) => {
+          if (error) {
+            console.error('Error updating location status:', error);
+          }
+        });
+      
       // Show Loc Start, hide Loc Stop
       document.getElementById(`loc-start-${userId}`).style.display = 'inline-block';
       document.getElementById(`loc-stop-${userId}`).style.display = 'none';
@@ -311,6 +534,83 @@
       window.open(url, '_blank');
     }
 
+    // View location history for a user
+    window.viewLocationHistory = async function(userId, userEmail) {
+      try {
+        const { data, error } = await supabase
+          .from('location_history')
+          .select('*')
+          .eq('user_id', userId)
+          .order('timestamp', { ascending: false })
+          .limit(50); // Show last 50 records
+        
+        if (error) {
+          messageDiv.textContent = 'Error loading location history: ' + error.message;
+          messageDiv.className = 'error';
+          return;
+        }
+        
+        if (!data || data.length === 0) {
+          messageDiv.textContent = 'No location history found for this user.';
+          messageDiv.className = 'error';
+          return;
+        }
+        
+        // Create history modal
+        const historyModal = document.createElement('div');
+        historyModal.style.cssText = 'position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);';
+        historyModal.innerHTML = `
+          <div style="background-color: #fefefe; margin: 5% auto; padding: 2em; border-radius: 8px; width: 90%; max-width: 800px; max-height: 80vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5em;">
+              <h2 style="margin: 0; color: #2d3e50;">Location History - ${userEmail}</h2>
+              <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: none; border: none; font-size: 1.5em; cursor: pointer; color: #666;">&times;</button>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 1em;">
+              <thead>
+                <tr style="background: #f8f9fa;">
+                  <th style="border: 1px solid #ddd; padding: 0.75em; text-align: left;">Timestamp</th>
+                  <th style="border: 1px solid #ddd; padding: 0.75em; text-align: left;">Latitude</th>
+                  <th style="border: 1px solid #ddd; padding: 0.75em; text-align: left;">Longitude</th>
+                  <th style="border: 1px solid #ddd; padding: 0.75em; text-align: left;">Accuracy</th>
+                  <th style="border: 1px solid #ddd; padding: 0.75em; text-align: left;">Device</th>
+                  <th style="border: 1px solid #ddd; padding: 0.75em; text-align: left;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${data.map(record => `
+                  <tr>
+                    <td style="border: 1px solid #ddd; padding: 0.75em;">${new Date(record.timestamp).toLocaleString()}</td>
+                    <td style="border: 1px solid #ddd; padding: 0.75em;">${record.latitude}</td>
+                    <td style="border: 1px solid #ddd; padding: 0.75em;">${record.longitude}</td>
+                    <td style="border: 1px solid #ddd; padding: 0.75em;">${record.accuracy ? Math.round(record.accuracy) + 'm' : 'N/A'}</td>
+                    <td style="border: 1px solid #ddd; padding: 0.75em; font-size: 0.9em; max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${record.device_name || 'N/A'}</td>
+                    <td style="border: 1px solid #ddd; padding: 0.75em;">
+                      <button onclick="viewOnMap(${record.latitude}, ${record.longitude})" style="background: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;" title="View on Map">
+                        <i class="fas fa-map-marker-alt"></i>
+                      </button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+        
+        document.body.appendChild(historyModal);
+        
+        // Close modal when clicking outside
+        historyModal.addEventListener('click', (e) => {
+          if (e.target === historyModal) {
+            historyModal.remove();
+          }
+        });
+        
+      } catch (error) {
+        messageDiv.textContent = 'Error loading location history: ' + error.message;
+        messageDiv.className = 'error';
+      }
+    }
+
     // Live time display
     function updateLiveTime() {
       const now = new Date();
@@ -320,6 +620,11 @@
     }
     setInterval(updateLiveTime, 1000);
     updateLiveTime();
+
+    document.getElementById('logoutBtn').onclick = async function() {
+      await supabase.auth.signOut();
+      window.location.href = 'login.html';
+    };
   </script>
   </main>
   <footer style="background: #2d3e50; color: #fff; text-align: center; padding: 1.2em 0; font-size: 1em; margin-top: 2em; border-radius: 0 0 8px 8px;">

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Summarize Conversation (Supabase + Edge Function)</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    .hidden { display: none; }
+    label { display: block; margin-top: 1em; }
+    select, input, button { margin-top: 0.5em; }
+    #summary { margin-top: 2em; background: #f4f4f4; padding: 1em; border-radius: 8px; }
+    #error { color: red; margin-top: 1em; }
+  </style>
+</head>
+<body>
+  <h1>Summarize Conversation</h1>
+
+  <!-- Login Section -->
+  <div id="login-section">
+    <h2>Login</h2>
+    <label>Email:
+      <input type="email" id="email" required />
+    </label>
+    <label>Password:
+      <input type="password" id="password" required />
+    </label>
+    <button id="login-btn">Login</button>
+    <div id="login-error" style="color:red;"></div>
+  </div>
+
+  <!-- Main App Section -->
+  <div id="app-section" class="hidden">
+    <button id="logout-btn" style="float:right;">Logout</button>
+    <h2>Select a Conversation</h2>
+    <select id="conversation-select"></select>
+    <button id="summarize-btn">Summarize Conversation</button>
+    <div id="error"></div>
+    <div id="summary"></div>
+  </div>
+
+  <script>
+    // Replace with your Supabase project credentials
+    const SUPABASE_URL = 'https://wtcxhhbigmqrmqdyhzcz.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0Y3hoaGJpZ21xcm1xZHloemN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIxNjE3ODgsImV4cCI6MjA2NzczNzc4OH0.AIViaiRT2odHJM2wQXl3dDZ69YxEj7t_7UiRFqEgZjY'; // <-- Replace this
+    const EDGE_FUNCTION_URL = 'https://wtcxhhbigmqrmqdyhzcz.supabase.co/functions/v1/summarize-conversation';
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Elements
+    const loginSection = document.getElementById('login-section');
+    const appSection = document.getElementById('app-section');
+    const loginBtn = document.getElementById('login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const loginErrorDiv = document.getElementById('login-error');
+    const conversationSelect = document.getElementById('conversation-select');
+    const summarizeBtn = document.getElementById('summarize-btn');
+    const summaryDiv = document.getElementById('summary');
+    const errorDiv = document.getElementById('error');
+
+    // Show/hide sections
+    function setAuthState(isLoggedIn) {
+      if (isLoggedIn) {
+        loginSection.classList.add('hidden');
+        appSection.classList.remove('hidden');
+        loadConversations();
+      } else {
+        loginSection.classList.remove('hidden');
+        appSection.classList.add('hidden');
+        emailInput.value = '';
+        passwordInput.value = '';
+        summaryDiv.textContent = '';
+        errorDiv.textContent = '';
+      }
+    }
+
+    // Check initial auth state
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setAuthState(!!session);
+    });
+
+    // Login handler
+    loginBtn.onclick = async () => {
+      loginErrorDiv.textContent = '';
+      const email = emailInput.value;
+      const password = passwordInput.value;
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        loginErrorDiv.textContent = error.message;
+      } else {
+        setAuthState(true);
+      }
+    };
+
+    // Logout handler
+    logoutBtn.onclick = async () => {
+      await supabase.auth.signOut();
+      setAuthState(false);
+    };
+
+    // Load conversations for the user
+    async function loadConversations() {
+      conversationSelect.innerHTML = '';
+      summaryDiv.textContent = '';
+      errorDiv.textContent = '';
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      // Fetch conversations where user is a participant
+      const { data, error } = await supabase
+        .from('conversation_participants')
+        .select('conversation_id, conversations(title)')
+        .eq('user_id', user.id);
+      if (error) {
+        errorDiv.textContent = 'Failed to load conversations: ' + error.message;
+        return;
+      }
+      if (!data || data.length === 0) {
+        conversationSelect.innerHTML = '<option>No conversations found</option>';
+        return;
+      }
+      data.forEach(row => {
+        const option = document.createElement('option');
+        option.value = row.conversation_id;
+        option.textContent = row.conversations?.title || row.conversation_id;
+        conversationSelect.appendChild(option);
+      });
+    }
+
+    // Summarize conversation handler
+    summarizeBtn.onclick = async () => {
+      summaryDiv.textContent = '';
+      errorDiv.textContent = '';
+      const conversationId = conversationSelect.value;
+      if (!conversationId) {
+        errorDiv.textContent = 'Please select a conversation.';
+        return;
+      }
+      // Get current session for access token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        errorDiv.textContent = 'Not authenticated.';
+        return;
+      }
+      // Call edge function
+      try {
+        const response = await fetch(EDGE_FUNCTION_URL, {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + session.access_token,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ conversation_id: conversationId })
+        });
+        if (!response.ok) {
+          const err = await response.text();
+          throw new Error(err);
+        }
+        const result = await response.json();
+        summaryDiv.textContent = result.summary || JSON.stringify(result);
+      } catch (err) {
+        errorDiv.textContent = 'Error: ' + err.message;
+      }
+    };
+
+    // Listen for auth state changes
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthState(!!session);
+    });
+  </script>
+</body>
+</html> 
