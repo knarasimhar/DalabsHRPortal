@@ -4,31 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Employee Documents - HR Portal</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; }
-    .sidebar { position: fixed; left: 0; top: 0; width: 230px; height: 100vh; background: #2d3a4a; color: #fff; padding-top: 32px; box-shadow: 2px 0 8px #0001; }
-    .sidebar h2 { color: #fff; text-align: center; margin-bottom: 32px; font-size: 1.3em; letter-spacing: 1px; }
-    .sidebar ul { list-style: none; padding: 0; }
-    .sidebar li { margin: 18px 0; }
-    .sidebar a { color: #fff; text-decoration: none; font-weight: 500; font-size: 1.05em; padding: 8px 32px; display: block; border-left: 4px solid transparent; transition: background 0.2s, border-color 0.2s; }
-    .sidebar a:hover, .sidebar a.active { background: #1a2533; border-left: 4px solid #1a73e8; }
-    .main { margin-left: 250px; padding: 40px 32px; }
-    .container { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 32px; }
-    h1 { color: #2d3a4a; }
-    .form-section { margin-top: 32px; }
-    .form-group { margin-bottom: 20px; display: flex; align-items: center; }
-    .form-group label { width: 180px; font-weight: 500; color: #2d3a4a; }
-    .form-group input, .form-group select { flex: 1; padding: 8px 12px; border: 1px solid #cfd8dc; border-radius: 4px; font-size: 1em; }
-    .form-actions { text-align: right; margin-top: 24px; }
-    .form-actions button { background: #1a73e8; color: #fff; border: none; padding: 10px 28px; border-radius: 4px; font-size: 1em; cursor: pointer; transition: background 0.2s; }
-    .form-actions button:hover { background: #155ab6; }
-    @media (max-width: 700px) {
-      .sidebar { position: static; width: 100%; height: auto; box-shadow: none; }
-      .main { margin-left: 0; padding: 16px; }
-      .form-group { flex-direction: column; align-items: flex-start; }
-      .form-group label { width: 100%; margin-bottom: 6px; }
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <nav class="sidebar">
@@ -52,43 +28,156 @@
   <div class="main">
     <div class="container">
       <h1>Employee Documents</h1>
-      <p>Upload and manage employee contracts, IDs, certificates, and KYC documents. PAN No sequence validation and duplicate alert.</p>
-      <form class="form-section">
-        <div class="form-group">
-          <label for="contract">Upload Contract</label>
-          <input type="file" id="contract" name="contract">
+      <button id="addDocBtn">Add Document</button>
+      <div class="table-scroll">
+        <table id="docTable">
+          <thead>
+            <tr>
+              <th>Document Type</th>
+              <th>Employee</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>File</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Rows will be populated by JS -->
+          </tbody>
+        </table>
+      </div>
+      <div id="docModal" class="modal">
+        <div>
+          <span id="closeDocModal" class="close-modal">&times;</span>
+          <h2 id="docModalTitle">Document Details</h2>
+          <form id="docForm">
+            <input type="hidden" id="docId" />
+            <label>Document Type <input type="text" id="docType" required /></label>
+            <label>Employee <input type="text" id="docEmp" required /></label>
+            <label>Status <input type="text" id="docStatus" required /></label>
+            <label>Date <input type="date" id="docDate" required /></label>
+            <label>File <input type="file" id="docFile" /></label>
+            <div id="docModalActions" class="modal-actions"></div>
+          </form>
         </div>
-        <div class="form-group">
-          <label for="idProof">Upload ID Proof</label>
-          <input type="file" id="idProof" name="idProof">
-        </div>
-        <div class="form-group">
-          <label for="certificate">Upload Certificate</label>
-          <input type="file" id="certificate" name="certificate">
-        </div>
-        <div class="form-group">
-          <label for="kycType">KYC Document Type</label>
-          <select id="kycType" name="kycType">
-            <option value="aadhaar">Aadhaar Card</option>
-            <option value="pan">PAN Card</option>
-            <option value="dl">Driving License</option>
-            <option value="passport">Passport</option>
-            <option value="election">Election Card</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="kycFile">Upload KYC Document</label>
-          <input type="file" id="kycFile" name="kycFile">
-        </div>
-        <div class="form-group">
-          <label for="panNo">PAN Number</label>
-          <input type="text" id="panNo" name="panNo" placeholder="Enter PAN number">
-        </div>
-        <div class="form-actions">
-          <button type="submit">Upload Documents</button>
-        </div>
-      </form>
+      </div>
     </div>
   </div>
+  <script>
+    let documents = [
+      { id: 1, type: 'Aadhar', employee: 'John Doe', status: 'Verified', date: '2023-01-10', file: '' },
+      { id: 2, type: 'PAN', employee: 'Jane Smith', status: 'Pending', date: '2023-02-15', file: '' }
+    ];
+    let editingDocId = null;
+    const docTableBody = document.querySelector('#docTable tbody');
+    const docModal = document.getElementById('docModal');
+    const closeDocModal = document.getElementById('closeDocModal');
+    const addDocBtn = document.getElementById('addDocBtn');
+    const docForm = document.getElementById('docForm');
+    const docModalTitle = document.getElementById('docModalTitle');
+    const docModalActions = document.getElementById('docModalActions');
+    const docFileInput = document.getElementById('docFile');
+    function renderDocTable() {
+      docTableBody.innerHTML = '';
+      documents.forEach(doc => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${doc.type}</td>
+          <td>${doc.employee}</td>
+          <td>${doc.status}</td>
+          <td>${doc.date}</td>
+          <td>${doc.file ? `<a href="${doc.file}" target="_blank">View File</a>` : 'No file'}</td>
+          <td style="white-space:nowrap;">
+            <button title="View" onclick="viewDoc(${doc.id})" class="icon-view"><span aria-label='View'>&#128065;</span></button>
+            <button title="Edit" onclick="editDoc(${doc.id})" class="icon-edit"><span aria-label='Edit'>&#9998;</span></button>
+            <button title="Delete" onclick="deleteDoc(${doc.id})" class="icon-delete"><span aria-label='Delete'>&#128465;</span></button>
+          </td>
+        `;
+        docTableBody.appendChild(tr);
+      });
+    }
+    window.viewDoc = function(id) {
+      const doc = documents.find(e => e.id === id);
+      docModalTitle.textContent = 'View Document';
+      docForm.docId.value = doc.id;
+      docForm.docType.value = doc.type;
+      docForm.docEmp.value = doc.employee;
+      docForm.docStatus.value = doc.status;
+      docForm.docDate.value = doc.date;
+      docFileInput.value = '';
+      Array.from(docForm.elements).forEach(el => el.disabled = true);
+      docModalActions.innerHTML = '';
+      docModal.classList.add('active');
+    };
+    window.editDoc = function(id) {
+      const doc = documents.find(e => e.id === id);
+      docModalTitle.textContent = 'Edit Document';
+      docForm.docId.value = doc.id;
+      docForm.docType.value = doc.type;
+      docForm.docEmp.value = doc.employee;
+      docForm.docStatus.value = doc.status;
+      docForm.docDate.value = doc.date;
+      docFileInput.value = '';
+      Array.from(docForm.elements).forEach(el => el.disabled = false);
+      docForm.docId.disabled = true;
+      docModalActions.innerHTML = '<button type="submit">Save</button>';
+      docModal.classList.add('active');
+      editingDocId = id;
+    };
+    window.deleteDoc = function(id) {
+      if (confirm('Are you sure you want to delete this document?')) {
+        documents = documents.filter(e => e.id !== id);
+        renderDocTable();
+      }
+    };
+    addDocBtn.onclick = function() {
+      docModalTitle.textContent = 'Add Document';
+      docForm.reset();
+      docForm.docId.value = '';
+      Array.from(docForm.elements).forEach(el => el.disabled = false);
+      docForm.docId.disabled = true;
+      docModalActions.innerHTML = '<button type="submit">Add</button>';
+      docModal.classList.add('active');
+      editingDocId = null;
+    };
+    closeDocModal.onclick = function() {
+      docModal.classList.remove('active');
+    };
+    docForm.onsubmit = function(e) {
+      e.preventDefault();
+      const doc = {
+        id: editingDocId ? editingDocId : (documents.length ? Math.max(...documents.map(e => e.id)) + 1 : 1),
+        type: docForm.docType.value.trim(),
+        employee: docForm.docEmp.value.trim(),
+        status: docForm.docStatus.value.trim(),
+        date: docForm.docDate.value,
+        file: ''
+      };
+      if (docFileInput.files && docFileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          doc.file = evt.target.result;
+          saveDoc(doc);
+        };
+        reader.readAsDataURL(docFileInput.files[0]);
+      } else {
+        if (editingDocId) {
+          doc.file = documents.find(e => e.id === editingDocId).file;
+        }
+        saveDoc(doc);
+      }
+    };
+    function saveDoc(doc) {
+      if (editingDocId) {
+        const idx = documents.findIndex(e => e.id === editingDocId);
+        documents[idx] = doc;
+      } else {
+        documents.push(doc);
+      }
+      docModal.classList.remove('active');
+      renderDocTable();
+    }
+    renderDocTable();
+  </script>
 </body>
 </html> 

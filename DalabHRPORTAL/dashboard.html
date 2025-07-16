@@ -4,57 +4,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - HR Portal</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; }
-    .sidebar { position: fixed; left: 0; top: 0; width: 230px; height: 100vh; background: #2d3a4a; color: #fff; padding-top: 32px; box-shadow: 2px 0 8px #0001; }
-    .sidebar h2 { color: #fff; text-align: center; margin-bottom: 32px; font-size: 1.3em; letter-spacing: 1px; }
-    .sidebar ul { list-style: none; padding: 0; }
-    .sidebar li { margin: 18px 0; }
-    .sidebar a { color: #fff; text-decoration: none; font-weight: 500; font-size: 1.05em; padding: 8px 32px; display: block; border-left: 4px solid transparent; transition: background 0.2s, border-color 0.2s; }
-    .sidebar a:hover, .sidebar a.active { background: #1a2533; border-left: 4px solid #1a73e8; }
-    .main { margin-left: 250px; padding: 40px 32px; }
-    .container { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 32px; }
-    h1 { color: #2d3a4a; }
-    @media (max-width: 700px) {
-      .sidebar { position: static; width: 100%; height: auto; box-shadow: none; }
-      .main { margin-left: 0; padding: 16px; }
-    }
-    .tiles {
-      display: flex;
-      gap: 32px;
-      margin: 40px 0 0 0;
-      flex-wrap: wrap;
-      justify-content: flex-start;
-    }
-    .tile {
-      background: #1a73e8;
-      color: #fff;
-      border-radius: 12px;
+    .tile-img {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      object-fit: cover;
+      margin-bottom: 10px;
       box-shadow: 0 2px 8px #0002;
-      padding: 32px 36px;
-      min-width: 260px;
-      max-width: 320px;
-      flex: 1 1 260px;
-      text-decoration: none;
+      background: #f0f4f8;
+      display: block;
+    }
+    .tile-content {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .tile-info {
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
-      transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
-      margin-bottom: 24px;
     }
-    .tile:hover {
-      background: #155ab6;
-      box-shadow: 0 4px 16px #0003;
-      transform: translateY(-4px) scale(1.03);
-    }
-    .tile-title {
-      font-size: 1.3em;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-    .tile-desc {
-      font-size: 1em;
-      opacity: 0.9;
+    @media (max-width: 700px) {
+      .tile-content { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .tile-img { margin-bottom: 0; }
     }
   </style>
 </head>
@@ -86,16 +60,34 @@
       <p>Overview of HR metrics, pending approvals, alerts, and quick links to key actions.</p>
       <div class="tiles">
         <a class="tile" href="attendance-leave-management/dashboard.html">
-          <span class="tile-title">Attendance & Leave Management</span>
-          <span class="tile-desc">View and manage attendance, leave, and timesheets</span>
+          <div class="tile-content">
+            <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=facearea&w=96&q=80" alt="Attendance" class="tile-img" />
+            <div class="tile-info">
+              <span class="material-icons tile-icon">event_available</span>
+              <span class="tile-title">Attendance & Leave Management</span>
+              <span class="tile-desc">View and manage attendance, leave, and timesheets</span>
+            </div>
+          </div>
         </a>
         <a class="tile" href="payroll/dashboard.html">
-          <span class="tile-title">Payroll</span>
-          <span class="tile-desc">Payroll processing, payslips, and compliance</span>
+          <div class="tile-content">
+            <img src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=facearea&w=96&q=80" alt="Payroll" class="tile-img" />
+            <div class="tile-info">
+              <span class="material-icons tile-icon">payments</span>
+              <span class="tile-title">Payroll</span>
+              <span class="tile-desc">Payroll processing, payslips, and compliance</span>
+            </div>
+          </div>
         </a>
         <a class="tile" href="HRAdminNotification/dashboard.html">
-          <span class="tile-title">HR Admin Notification</span>
-          <span class="tile-desc">Announcements, greetings, and sharing updates</span>
+          <div class="tile-content">
+            <img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=facearea&w=96&q=80" alt="HR Admin" class="tile-img" />
+            <div class="tile-info">
+              <span class="material-icons tile-icon">campaign</span>
+              <span class="tile-title">HR Admin Notification</span>
+              <span class="tile-desc">Announcements, greetings, and sharing updates</span>
+            </div>
+          </div>
         </a>
       </div>
     </div>

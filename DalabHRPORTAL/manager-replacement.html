@@ -4,31 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Manager Replacement - HR Portal</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; }
-    .sidebar { position: fixed; left: 0; top: 0; width: 230px; height: 100vh; background: #2d3a4a; color: #fff; padding-top: 32px; box-shadow: 2px 0 8px #0001; }
-    .sidebar h2 { color: #fff; text-align: center; margin-bottom: 32px; font-size: 1.3em; letter-spacing: 1px; }
-    .sidebar ul { list-style: none; padding: 0; }
-    .sidebar li { margin: 18px 0; }
-    .sidebar a { color: #fff; text-decoration: none; font-weight: 500; font-size: 1.05em; padding: 8px 32px; display: block; border-left: 4px solid transparent; transition: background 0.2s, border-color 0.2s; }
-    .sidebar a:hover, .sidebar a.active { background: #1a2533; border-left: 4px solid #1a73e8; }
-    .main { margin-left: 250px; padding: 40px 32px; }
-    .container { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 32px; }
-    h1 { color: #2d3a4a; }
-    .form-section { margin-top: 32px; }
-    .form-group { margin-bottom: 20px; display: flex; align-items: center; }
-    .form-group label { width: 180px; font-weight: 500; color: #2d3a4a; }
-    .form-group input, .form-group select { flex: 1; padding: 8px 12px; border: 1px solid #cfd8dc; border-radius: 4px; font-size: 1em; }
-    .form-actions { text-align: right; margin-top: 24px; }
-    .form-actions button { background: #1a73e8; color: #fff; border: none; padding: 10px 28px; border-radius: 4px; font-size: 1em; cursor: pointer; transition: background 0.2s; }
-    .form-actions button:hover { background: #155ab6; }
-    @media (max-width: 700px) {
-      .sidebar { position: static; width: 100%; height: auto; box-shadow: none; }
-      .main { margin-left: 0; padding: 16px; }
-      .form-group { flex-direction: column; align-items: flex-start; }
-      .form-group label { width: 100%; margin-bottom: 6px; }
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <nav class="sidebar">
@@ -53,24 +29,119 @@
     <div class="container">
       <h1>Manager Replacement</h1>
       <p>Replace Approving Manager & Reporting Manager for an employee.</p>
-      <form class="form-section">
+      <div class="table-actions-bar">
+        <button class="icon-btn add-btn" onclick="openModal('add')" title="Add Replacement">
+          <span class="material-icons">add_circle</span>
+        </button>
+      </div>
+      <div class="scrollable-table">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Approving Manager</th>
+              <th>Reporting Manager</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="managerTableBody">
+            <!-- Dynamic rows go here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- Modal for Add/Edit/View -->
+  <div id="managerModal" class="modal">
+    <div class="modal-content">
+      <span class="close top-right" onclick="closeModal()">&times;</span>
+      <h2 id="modalTitle">Add Manager Replacement</h2>
+      <form id="managerForm">
         <div class="form-group">
           <label for="employee">Employee</label>
-          <input type="text" id="employee" name="employee" placeholder="Enter employee name or code">
+          <input type="text" id="employee" name="employee" placeholder="Enter employee name or code" required>
         </div>
         <div class="form-group">
           <label for="approvingManager">Approving Manager</label>
-          <input type="text" id="approvingManager" name="approvingManager" placeholder="Enter new approving manager">
+          <input type="text" id="approvingManager" name="approvingManager" placeholder="Enter new approving manager" required>
         </div>
         <div class="form-group">
           <label for="reportingManager">Reporting Manager</label>
-          <input type="text" id="reportingManager" name="reportingManager" placeholder="Enter new reporting manager">
+          <input type="text" id="reportingManager" name="reportingManager" placeholder="Enter new reporting manager" required>
         </div>
         <div class="form-actions">
-          <button type="submit">Replace Manager</button>
+          <button type="submit" class="primary-btn">Save</button>
         </div>
       </form>
     </div>
   </div>
+  <script src="https://fonts.googleapis.com/icon?family=Material+Icons"></script>
+  <script>
+    let managers = [];
+    let editIndex = null;
+    function renderTable() {
+      const tbody = document.getElementById('managerTableBody');
+      tbody.innerHTML = managers.map((entry, idx) => `
+        <tr>
+          <td>${entry.employee}</td>
+          <td>${entry.approvingManager}</td>
+          <td>${entry.reportingManager}</td>
+          <td>
+            <button class="icon-btn view-btn" title="View" onclick="openModal('view', ${idx})"><span class="material-icons">visibility</span></button>
+            <button class="icon-btn edit-btn" title="Edit" onclick="openModal('edit', ${idx})"><span class="material-icons">edit</span></button>
+            <button class="icon-btn delete-btn" title="Delete" onclick="deleteManager(${idx})"><span class="material-icons">delete</span></button>
+          </td>
+        </tr>
+      `).join('');
+    }
+    function openModal(mode, idx) {
+      const modal = document.getElementById('managerModal');
+      const form = document.getElementById('managerForm');
+      document.getElementById('modalTitle').textContent = mode === 'add' ? 'Add Manager Replacement' : mode === 'edit' ? 'Edit Manager Replacement' : 'View Manager Replacement';
+      form.reset();
+      editIndex = null;
+      if (mode === 'edit' || mode === 'view') {
+        editIndex = idx;
+        const entry = managers[idx];
+        form.employee.value = entry.employee;
+        form.approvingManager.value = entry.approvingManager;
+        form.reportingManager.value = entry.reportingManager;
+      }
+      Array.from(form.elements).forEach(el => {
+        el.disabled = (mode === 'view');
+      });
+      modal.style.display = 'block';
+    }
+    function closeModal() {
+      document.getElementById('managerModal').style.display = 'none';
+    }
+    document.getElementById('managerForm').onsubmit = function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const data = {
+        employee: form.employee.value,
+        approvingManager: form.approvingManager.value,
+        reportingManager: form.reportingManager.value
+      };
+      if (editIndex !== null) {
+        managers[editIndex] = data;
+      } else {
+        managers.push(data);
+      }
+      closeModal();
+      renderTable();
+    };
+    function deleteManager(idx) {
+      if (confirm('Delete this entry?')) {
+        managers.splice(idx, 1);
+        renderTable();
+      }
+    }
+    window.onclick = function(event) {
+      const modal = document.getElementById('managerModal');
+      if (event.target === modal) closeModal();
+    };
+    renderTable();
+  </script>
 </body>
 </html> 

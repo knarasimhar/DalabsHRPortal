@@ -4,31 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Profile Management - HR Portal</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; }
-    .sidebar { position: fixed; left: 0; top: 0; width: 230px; height: 100vh; background: #2d3a4a; color: #fff; padding-top: 32px; box-shadow: 2px 0 8px #0001; }
-    .sidebar h2 { color: #fff; text-align: center; margin-bottom: 32px; font-size: 1.3em; letter-spacing: 1px; }
-    .sidebar ul { list-style: none; padding: 0; }
-    .sidebar li { margin: 18px 0; }
-    .sidebar a { color: #fff; text-decoration: none; font-weight: 500; font-size: 1.05em; padding: 8px 32px; display: block; border-left: 4px solid transparent; transition: background 0.2s, border-color 0.2s; }
-    .sidebar a:hover, .sidebar a.active { background: #1a2533; border-left: 4px solid #1a73e8; }
-    .main { margin-left: 250px; padding: 40px 32px; }
-    .container { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 32px; }
-    h1 { color: #2d3a4a; }
-    .form-section { margin-top: 32px; }
-    .form-group { margin-bottom: 20px; display: flex; align-items: center; }
-    .form-group label { width: 180px; font-weight: 500; color: #2d3a4a; }
-    .form-group input, .form-group select { flex: 1; padding: 8px 12px; border: 1px solid #cfd8dc; border-radius: 4px; font-size: 1em; }
-    .form-actions { text-align: right; margin-top: 24px; }
-    .form-actions button { background: #1a73e8; color: #fff; border: none; padding: 10px 28px; border-radius: 4px; font-size: 1em; cursor: pointer; transition: background 0.2s; }
-    .form-actions button:hover { background: #155ab6; }
-    @media (max-width: 700px) {
-      .sidebar { position: static; width: 100%; height: auto; box-shadow: none; }
-      .main { margin-left: 0; padding: 16px; }
-      .form-group { flex-direction: column; align-items: flex-start; }
-      .form-group label { width: 100%; margin-bottom: 6px; }
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <nav class="sidebar">
@@ -53,40 +29,151 @@
     <div class="container">
       <h1>Profile Management</h1>
       <p>Maintain employee profile data (email, mobile, address, family, education, etc.).</p>
-      <form class="form-section">
+      <div class="table-actions-bar">
+        <button class="icon-btn add-btn" onclick="openModal('add')" title="Add Profile">
+          <span class="material-icons">add_circle</span>
+        </button>
+      </div>
+      <div class="scrollable-table">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Mobile</th>
+              <th>Address</th>
+              <th>Family</th>
+              <th>Education</th>
+              <th>Languages</th>
+              <th>Past Employment</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="profileTableBody">
+            <!-- Dynamic rows go here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- Modal for Add/Edit/View -->
+  <div id="profileModal" class="modal">
+    <div class="modal-content">
+      <span class="close top-right" onclick="closeModal()">&times;</span>
+      <h2 id="modalTitle">Add Profile</h2>
+      <form id="profileForm">
         <div class="form-group">
           <label for="email">Email ID</label>
-          <input type="email" id="email" name="email" placeholder="Enter email">
+          <input type="email" id="email" name="email" placeholder="Enter email" required>
         </div>
         <div class="form-group">
           <label for="mobile">Mobile Number</label>
-          <input type="text" id="mobile" name="mobile" placeholder="Enter mobile number">
+          <input type="text" id="mobile" name="mobile" placeholder="Enter mobile number" required>
         </div>
         <div class="form-group">
           <label for="address">Address</label>
-          <input type="text" id="address" name="address" placeholder="Enter address">
+          <input type="text" id="address" name="address" placeholder="Enter address" required>
         </div>
         <div class="form-group">
           <label for="family">Family Details</label>
-          <input type="text" id="family" name="family" placeholder="Enter family details">
+          <input type="text" id="family" name="family" placeholder="Enter family details" required>
         </div>
         <div class="form-group">
           <label for="education">Education Qualification</label>
-          <input type="text" id="education" name="education" placeholder="Enter education qualification">
+          <input type="text" id="education" name="education" placeholder="Enter education qualification" required>
         </div>
         <div class="form-group">
           <label for="languages">Languages Known</label>
-          <input type="text" id="languages" name="languages" placeholder="Enter languages known">
+          <input type="text" id="languages" name="languages" placeholder="Enter languages known" required>
         </div>
         <div class="form-group">
           <label for="pastEmployment">Past Employment Details</label>
-          <input type="text" id="pastEmployment" name="pastEmployment" placeholder="Enter past employment details">
+          <input type="text" id="pastEmployment" name="pastEmployment" placeholder="Enter past employment details" required>
         </div>
         <div class="form-actions">
-          <button type="submit">Save Profile</button>
+          <button type="submit" class="primary-btn">Save</button>
         </div>
       </form>
     </div>
   </div>
+  <script src="https://fonts.googleapis.com/icon?family=Material+Icons"></script>
+  <script>
+    let profiles = [];
+    let editIndex = null;
+    function renderTable() {
+      const tbody = document.getElementById('profileTableBody');
+      tbody.innerHTML = profiles.map((entry, idx) => `
+        <tr>
+          <td>${entry.email}</td>
+          <td>${entry.mobile}</td>
+          <td>${entry.address}</td>
+          <td>${entry.family}</td>
+          <td>${entry.education}</td>
+          <td>${entry.languages}</td>
+          <td>${entry.pastEmployment}</td>
+          <td>
+            <button class="icon-btn view-btn" title="View" onclick="openModal('view', ${idx})"><span class="material-icons">visibility</span></button>
+            <button class="icon-btn edit-btn" title="Edit" onclick="openModal('edit', ${idx})"><span class="material-icons">edit</span></button>
+            <button class="icon-btn delete-btn" title="Delete" onclick="deleteProfile(${idx})"><span class="material-icons">delete</span></button>
+          </td>
+        </tr>
+      `).join('');
+    }
+    function openModal(mode, idx) {
+      const modal = document.getElementById('profileModal');
+      const form = document.getElementById('profileForm');
+      document.getElementById('modalTitle').textContent = mode === 'add' ? 'Add Profile' : mode === 'edit' ? 'Edit Profile' : 'View Profile';
+      form.reset();
+      editIndex = null;
+      if (mode === 'edit' || mode === 'view') {
+        editIndex = idx;
+        const entry = profiles[idx];
+        form.email.value = entry.email;
+        form.mobile.value = entry.mobile;
+        form.address.value = entry.address;
+        form.family.value = entry.family;
+        form.education.value = entry.education;
+        form.languages.value = entry.languages;
+        form.pastEmployment.value = entry.pastEmployment;
+      }
+      Array.from(form.elements).forEach(el => {
+        el.disabled = (mode === 'view');
+      });
+      modal.style.display = 'block';
+    }
+    function closeModal() {
+      document.getElementById('profileModal').style.display = 'none';
+    }
+    document.getElementById('profileForm').onsubmit = function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const data = {
+        email: form.email.value,
+        mobile: form.mobile.value,
+        address: form.address.value,
+        family: form.family.value,
+        education: form.education.value,
+        languages: form.languages.value,
+        pastEmployment: form.pastEmployment.value
+      };
+      if (editIndex !== null) {
+        profiles[editIndex] = data;
+      } else {
+        profiles.push(data);
+      }
+      closeModal();
+      renderTable();
+    };
+    function deleteProfile(idx) {
+      if (confirm('Delete this entry?')) {
+        profiles.splice(idx, 1);
+        renderTable();
+      }
+    }
+    window.onclick = function(event) {
+      const modal = document.getElementById('profileModal');
+      if (event.target === modal) closeModal();
+    };
+    renderTable();
+  </script>
 </body>
 </html> 

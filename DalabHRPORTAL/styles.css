@@ -1,0 +1,259 @@
+/* Keka-inspired HR Portal Stylesheet */
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(120deg, #f6f8fb 0%, #ffffff 100%);
+  margin: 0;
+  color: #2B3A67;
+}
+
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 240px;
+  height: 100vh;
+  background: linear-gradient(135deg, #2B3A67 70%, #4F8DFD 100%);
+  color: #fff;
+  padding-top: 32px;
+  box-shadow: 2px 0 16px #0002;
+  z-index: 10;
+}
+.sidebar h2 {
+  color: #fff;
+  text-align: center;
+  margin-bottom: 32px;
+  font-size: 1.4em;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.sidebar li {
+  margin: 18px 0;
+}
+.sidebar a {
+  color: #e0e7ef;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1.08em;
+  padding: 10px 36px;
+  display: block;
+  border-left: 4px solid transparent;
+  border-radius: 0 24px 24px 0;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.sidebar a.active, .sidebar a:hover {
+  background: #4F8DFD;
+  color: #fff;
+  border-left: 4px solid #00B9F1;
+}
+
+.main {
+  margin-left: 260px;
+  padding: 48px 32px;
+  min-height: 100vh;
+  background: none;
+}
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 24px #0001;
+  padding: 40px 36px;
+}
+h1 {
+  color: #2B3A67;
+  font-size: 2em;
+  margin-bottom: 24px;
+}
+
+button, .btn {
+  background: linear-gradient(90deg, #4F8DFD 60%, #00B9F1 100%);
+  color: #fff;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #4F8DFD22;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+}
+button:hover, .btn:hover {
+  background: linear-gradient(90deg, #2B3A67 60%, #7B61FF 100%);
+  box-shadow: 0 4px 16px #4F8DFD33;
+  transform: translateY(-2px) scale(1.03);
+}
+
+/* Table Styles */
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 24px;
+}
+.table-scroll table {
+  min-width: 700px;
+  width: 100%;
+  border-collapse: collapse;
+  background: #f6f8fb;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px #0001;
+}
+thead {
+  background: #e3eafc;
+}
+th, td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+}
+th {
+  color: #2B3A67;
+  font-weight: 600;
+  background: #e3eafc;
+}
+tr:last-child td {
+  border-bottom: none;
+}
+tr:hover {
+  background: #eaf3ff;
+}
+
+/* Modal Styles */
+#employeeModal, .modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(44, 62, 80, 0.18);
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  overflow-y: auto;
+}
+#employeeModal.active, .modal.active {
+  display: flex;
+}
+#employeeModal > div, .modal > div {
+  background: #fff;
+  padding: 36px 28px;
+  border-radius: 12px;
+  min-width: 340px;
+  max-width: 95vw;
+  position: relative;
+  box-shadow: 0 8px 32px #4F8DFD22;
+  animation: modalIn 0.2s;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+@keyframes modalIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+#closeModal, .close-modal {
+  position: absolute;
+  top: 14px;
+  right: 22px;
+  font-size: 1.7em;
+  color: #4F8DFD;
+  cursor: pointer;
+  font-weight: bold;
+  transition: color 0.2s;
+}
+#closeModal:hover, .close-modal:hover {
+  color: #00B9F1;
+}
+.close.top-right {
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  font-size: 2rem;
+  color: #888;
+  cursor: pointer;
+  z-index: 10;
+}
+
+form label {
+  font-weight: 500;
+  color: #2B3A67;
+  margin-bottom: 4px;
+  display: block;
+}
+form input, form select, form textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  font-size: 1em;
+  margin-top: 4px;
+  margin-bottom: 12px;
+  background: #f6f8fb;
+  transition: border 0.2s;
+}
+form input:focus, form select:focus, form textarea:focus {
+  border: 1.5px solid #4F8DFD;
+  outline: none;
+}
+
+#modalActions, .modal-actions {
+  display: flex;
+  gap: 14px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.icon-view {
+  color: #4F8DFD;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2em;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+.icon-view:hover {
+  color: #2B3A67;
+}
+.icon-edit {
+  color: #00B9F1;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2em;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+.icon-edit:hover {
+  color: #4F8DFD;
+}
+.icon-delete {
+  color: #e53935;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2em;
+  padding: 0 4px;
+  transition: color 0.2s;
+}
+.icon-delete:hover {
+  color: #b71c1c;
+}
+
+@media (max-width: 900px) {
+  .main { margin-left: 0; padding: 16px; }
+  .sidebar { position: static; width: 100%; height: auto; box-shadow: none; }
+  .container { padding: 18px 6px; }
+  #employeeModal > div, .modal > div {
+    min-width: 90vw;
+    max-width: 98vw;
+  }
+  .table-scroll table {
+    min-width: 700px;
+  }
+} 

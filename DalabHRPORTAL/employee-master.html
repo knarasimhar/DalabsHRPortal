@@ -4,31 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Employee Master - HR Portal</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; }
-    .sidebar { position: fixed; left: 0; top: 0; width: 230px; height: 100vh; background: #2d3a4a; color: #fff; padding-top: 32px; box-shadow: 2px 0 8px #0001; }
-    .sidebar h2 { color: #fff; text-align: center; margin-bottom: 32px; font-size: 1.3em; letter-spacing: 1px; }
-    .sidebar ul { list-style: none; padding: 0; }
-    .sidebar li { margin: 18px 0; }
-    .sidebar a { color: #fff; text-decoration: none; font-weight: 500; font-size: 1.05em; padding: 8px 32px; display: block; border-left: 4px solid transparent; transition: background 0.2s, border-color 0.2s; }
-    .sidebar a:hover, .sidebar a.active { background: #1a2533; border-left: 4px solid #1a73e8; }
-    .main { margin-left: 250px; padding: 40px 32px; }
-    .container { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 32px; }
-    h1 { color: #2d3a4a; }
-    .form-section { margin-top: 32px; }
-    .form-group { margin-bottom: 20px; display: flex; align-items: center; }
-    .form-group label { width: 180px; font-weight: 500; color: #2d3a4a; }
-    .form-group input, .form-group select { flex: 1; padding: 8px 12px; border: 1px solid #cfd8dc; border-radius: 4px; font-size: 1em; }
-    .form-actions { text-align: right; margin-top: 24px; }
-    .form-actions button { background: #1a73e8; color: #fff; border: none; padding: 10px 28px; border-radius: 4px; font-size: 1em; cursor: pointer; transition: background 0.2s; }
-    .form-actions button:hover { background: #155ab6; }
-    @media (max-width: 700px) {
-      .sidebar { position: static; width: 100%; height: auto; box-shadow: none; }
-      .main { margin-left: 0; padding: 16px; }
-      .form-group { flex-direction: column; align-items: flex-start; }
-      .form-group label { width: 100%; margin-bottom: 6px; }
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <nav class="sidebar">
@@ -52,61 +28,221 @@
   <div class="main">
     <div class="container">
       <h1>Employee Master</h1>
-      <p>Add, edit, search, and delete employee records. Manage employee codes, profile pictures, and approval workflows.</p>
-      <form class="form-section">
-        <div class="form-group">
-          <label for="empName">Employee Name</label>
-          <input type="text" id="empName" name="empName" placeholder="Enter employee name">
+      <button id="addEmployeeBtn">Add Employee</button>
+      <div class="table-scroll">
+        <table id="employeeTable">
+          <thead>
+            <tr>
+              <th>Employee Name</th>
+              <th>Employee Code</th>
+              <th>Department</th>
+              <th>Designation</th>
+              <th>Date of Joining</th>
+              <th>Profile Picture</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Rows will be populated by JS -->
+          </tbody>
+        </table>
+      </div>
+      <!-- Modal for Add/Edit/View -->
+      <div id="employeeModal" class="modal">
+        <div>
+          <span id="closeModal" class="close-modal">&times;</span>
+          <h2 id="modalTitle">Employee Details</h2>
+          <form id="employeeForm">
+            <input type="hidden" id="empId" />
+            <label>Employee Name <input type="text" id="empName" required placeholder="Enter employee name" /></label>
+            <label>Employee Code <input type="text" id="empCode" required placeholder="Auto-generated or enter code" /></label>
+            <label>Email ID <input type="email" id="empEmail" required placeholder="Enter email" /></label>
+            <label>Mobile Number <input type="text" id="empMobile" required placeholder="Enter mobile number" /></label>
+            <label>Department <input type="text" id="empDept" required placeholder="Enter department" /></label>
+            <label>Designation <input type="text" id="empDesig" required placeholder="Enter designation" /></label>
+            <label>Branch <input type="text" id="empBranch" required placeholder="Enter branch" /></label>
+            <label>Location <input type="text" id="empLocation" required placeholder="Enter location" /></label>
+            <label>Grade <input type="text" id="empGrade" required placeholder="Enter grade" /></label>
+            <label>Address <input type="text" id="empAddress" required placeholder="Enter address" /></label>
+            <label>Date of Joining <input type="date" id="empDoj" required placeholder="dd-mm-yyyy" /></label>
+            <label>Profile Picture <input type="file" id="empPic" accept="image/*" /></label>
+            <div id="modalActions" class="modal-actions"></div>
+          </form>
         </div>
-        <div class="form-group">
-          <label for="empCode">Employee Code</label>
-          <input type="text" id="empCode" name="empCode" placeholder="Auto-generated or enter code">
-        </div>
-        <div class="form-group">
-          <label for="email">Email ID</label>
-          <input type="email" id="email" name="email" placeholder="Enter email">
-        </div>
-        <div class="form-group">
-          <label for="mobile">Mobile Number</label>
-          <input type="text" id="mobile" name="mobile" placeholder="Enter mobile number">
-        </div>
-        <div class="form-group">
-          <label for="department">Department</label>
-          <input type="text" id="department" name="department" placeholder="Enter department">
-        </div>
-        <div class="form-group">
-          <label for="designation">Designation</label>
-          <input type="text" id="designation" name="designation" placeholder="Enter designation">
-        </div>
-        <div class="form-group">
-          <label for="branch">Branch</label>
-          <input type="text" id="branch" name="branch" placeholder="Enter branch">
-        </div>
-        <div class="form-group">
-          <label for="location">Location</label>
-          <input type="text" id="location" name="location" placeholder="Enter location">
-        </div>
-        <div class="form-group">
-          <label for="grade">Grade</label>
-          <input type="text" id="grade" name="grade" placeholder="Enter grade">
-        </div>
-        <div class="form-group">
-          <label for="address">Address</label>
-          <input type="text" id="address" name="address" placeholder="Enter address">
-        </div>
-        <div class="form-group">
-          <label for="doj">Date of Joining</label>
-          <input type="date" id="doj" name="doj">
-        </div>
-        <div class="form-group">
-          <label for="profilePic">Profile Picture</label>
-          <input type="file" id="profilePic" name="profilePic">
-        </div>
-        <div class="form-actions">
-          <button type="submit">Save Employee</button>
-        </div>
-      </form>
+      </div>
     </div>
   </div>
+  <script>
+    // Dummy data
+    let employees = [
+      {
+        id: 1,
+        name: 'John Doe',
+        code: 'EMP001',
+        email: 'john.doe@example.com',
+        mobile: '9876543210',
+        department: 'HR',
+        designation: 'Manager',
+        branch: 'Main',
+        location: 'Indore',
+        grade: 'A',
+        address: '123 Main St',
+        doj: '2022-01-15',
+        pic: ''
+      },
+      {
+        id: 2,
+        name: 'Jane Smith',
+        code: 'EMP002',
+        email: 'jane.smith@example.com',
+        mobile: '9123456780',
+        department: 'Finance',
+        designation: 'Accountant',
+        branch: 'Branch 1',
+        location: 'Mumbai',
+        grade: 'B',
+        address: '456 Side Rd',
+        doj: '2021-07-10',
+        pic: ''
+      }
+    ];
+    let editingId = null;
+    const tableBody = document.querySelector('#employeeTable tbody');
+    const modal = document.getElementById('employeeModal');
+    const closeModal = document.getElementById('closeModal');
+    const addBtn = document.getElementById('addEmployeeBtn');
+    const form = document.getElementById('employeeForm');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalActions = document.getElementById('modalActions');
+    const empPicInput = document.getElementById('empPic');
+    function renderTable() {
+      tableBody.innerHTML = '';
+      employees.forEach(emp => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${emp.name}</td>
+          <td>${emp.code}</td>
+          <td>${emp.department}</td>
+          <td>${emp.designation}</td>
+          <td>${emp.doj}</td>
+          <td>${emp.pic ? `<img src="${emp.pic}" alt="Profile" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" />` : 'No file'}</td>
+          <td style="white-space:nowrap;">
+            <button title="View" onclick="viewEmployee(${emp.id})" class="icon-view"><span aria-label='View'>&#128065;</span></button>
+            <button title="Edit" onclick="editEmployee(${emp.id})" class="icon-edit"><span aria-label='Edit'>&#9998;</span></button>
+            <button title="Delete" onclick="deleteEmployee(${emp.id})" class="icon-delete"><span aria-label='Delete'>&#128465;</span></button>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    }
+    window.viewEmployee = function(id) {
+      const emp = employees.find(e => e.id === id);
+      modalTitle.textContent = 'View Employee';
+      form.empId.value = emp.id;
+      form.empName.value = emp.name;
+      form.empCode.value = emp.code;
+      form.empEmail.value = emp.email;
+      form.empMobile.value = emp.mobile;
+      form.empDept.value = emp.department;
+      form.empDesig.value = emp.designation;
+      form.empBranch.value = emp.branch;
+      form.empLocation.value = emp.location;
+      form.empGrade.value = emp.grade;
+      form.empAddress.value = emp.address;
+      form.empDoj.value = emp.doj;
+      empPicInput.value = '';
+      // Disable all fields
+      Array.from(form.elements).forEach(el => el.disabled = true);
+      modalActions.innerHTML = '';
+      modal.classList.add('active');
+    };
+    window.editEmployee = function(id) {
+      const emp = employees.find(e => e.id === id);
+      modalTitle.textContent = 'Edit Employee';
+      form.empId.value = emp.id;
+      form.empName.value = emp.name;
+      form.empCode.value = emp.code;
+      form.empEmail.value = emp.email;
+      form.empMobile.value = emp.mobile;
+      form.empDept.value = emp.department;
+      form.empDesig.value = emp.designation;
+      form.empBranch.value = emp.branch;
+      form.empLocation.value = emp.location;
+      form.empGrade.value = emp.grade;
+      form.empAddress.value = emp.address;
+      form.empDoj.value = emp.doj;
+      empPicInput.value = '';
+      Array.from(form.elements).forEach(el => el.disabled = false);
+      form.empId.disabled = true;
+      modalActions.innerHTML = '<button type="submit">Save</button>';
+      modal.classList.add('active');
+      editingId = id;
+    };
+    window.deleteEmployee = function(id) {
+      if (confirm('Are you sure you want to delete this employee?')) {
+        employees = employees.filter(e => e.id !== id);
+        renderTable();
+      }
+    };
+    addBtn.onclick = function() {
+      modalTitle.textContent = 'Add Employee';
+      form.reset();
+      form.empId.value = '';
+      Array.from(form.elements).forEach(el => el.disabled = false);
+      form.empId.disabled = true;
+      modalActions.innerHTML = '<button type="submit">Add</button>';
+      modal.classList.add('active');
+      editingId = null;
+    };
+    closeModal.onclick = function() {
+      modal.classList.remove('active');
+    };
+    form.onsubmit = function(e) {
+      e.preventDefault();
+      const emp = {
+        id: editingId ? editingId : (employees.length ? Math.max(...employees.map(e => e.id)) + 1 : 1),
+        name: form.empName.value.trim(),
+        code: form.empCode.value.trim(),
+        email: form.empEmail.value.trim(),
+        mobile: form.empMobile.value.trim(),
+        department: form.empDept.value.trim(),
+        designation: form.empDesig.value.trim(),
+        branch: form.empBranch.value.trim(),
+        location: form.empLocation.value.trim(),
+        grade: form.empGrade.value.trim(),
+        address: form.empAddress.value.trim(),
+        doj: form.empDoj.value,
+        pic: ''
+      };
+      // Handle profile picture
+      if (empPicInput.files && empPicInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          emp.pic = evt.target.result;
+          saveEmployee(emp);
+        };
+        reader.readAsDataURL(empPicInput.files[0]);
+      } else {
+        if (editingId) {
+          emp.pic = employees.find(e => e.id === editingId).pic;
+        }
+        saveEmployee(emp);
+      }
+    };
+    function saveEmployee(emp) {
+      if (editingId) {
+        // Edit
+        const idx = employees.findIndex(e => e.id === editingId);
+        employees[idx] = emp;
+      } else {
+        // Add
+        employees.push(emp);
+      }
+      modal.classList.remove('active');
+      renderTable();
+    }
+    // Initial render
+    renderTable();
+  </script>
 </body>
 </html> 

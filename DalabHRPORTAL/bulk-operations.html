@@ -4,31 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bulk Operations - HR Portal</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; }
-    .sidebar { position: fixed; left: 0; top: 0; width: 230px; height: 100vh; background: #2d3a4a; color: #fff; padding-top: 32px; box-shadow: 2px 0 8px #0001; }
-    .sidebar h2 { color: #fff; text-align: center; margin-bottom: 32px; font-size: 1.3em; letter-spacing: 1px; }
-    .sidebar ul { list-style: none; padding: 0; }
-    .sidebar li { margin: 18px 0; }
-    .sidebar a { color: #fff; text-decoration: none; font-weight: 500; font-size: 1.05em; padding: 8px 32px; display: block; border-left: 4px solid transparent; transition: background 0.2s, border-color 0.2s; }
-    .sidebar a:hover, .sidebar a.active { background: #1a2533; border-left: 4px solid #1a73e8; }
-    .main { margin-left: 250px; padding: 40px 32px; }
-    .container { max-width: 900px; margin: 0 auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; padding: 32px; }
-    h1 { color: #2d3a4a; }
-    .form-section { margin-top: 32px; }
-    .form-group { margin-bottom: 20px; display: flex; align-items: center; }
-    .form-group label { width: 180px; font-weight: 500; color: #2d3a4a; }
-    .form-group input, .form-group select { flex: 1; padding: 8px 12px; border: 1px solid #cfd8dc; border-radius: 4px; font-size: 1em; }
-    .form-actions { text-align: right; margin-top: 24px; }
-    .form-actions button { background: #1a73e8; color: #fff; border: none; padding: 10px 28px; border-radius: 4px; font-size: 1em; cursor: pointer; transition: background 0.2s; }
-    .form-actions button:hover { background: #155ab6; }
-    @media (max-width: 700px) {
-      .sidebar { position: static; width: 100%; height: auto; box-shadow: none; }
-      .main { margin-left: 0; padding: 16px; }
-      .form-group { flex-direction: column; align-items: flex-start; }
-      .form-group label { width: 100%; margin-bottom: 6px; }
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
   <nav class="sidebar">
@@ -52,25 +29,149 @@
   <div class="main">
     <div class="container">
       <h1>Bulk Operations</h1>
-      <p>Import/export employee details and reports. Bulk upload employee data from Excel.</p>
-      <form class="form-section">
-        <div class="form-group">
-          <label for="importFile">Import Employees (Excel)</label>
-          <input type="file" id="importFile" name="importFile" accept=".xls,.xlsx">
+      <button id="addBulkBtn">Add Record</button>
+      <div class="table-scroll">
+        <table id="bulkTable" class="modern-table">
+          <thead>
+            <tr>
+              <th>Operation Type</th>
+              <th>Description</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Rows will be populated by JS -->
+          </tbody>
+        </table>
+      </div>
+      <!-- Modal for Add/Edit/View -->
+      <div id="bulkModal" class="modal">
+        <div class="modal-content">
+          <span id="closeBulkModal" class="close top-right">&times;</span>
+          <h2 id="bulkModalTitle">Bulk Operation Details</h2>
+          <form id="bulkForm">
+            <input type="hidden" id="bulkId" />
+            <div class="form-group">
+              <label>Operation Type <input type="text" id="bulkType" required placeholder="Enter operation type" /></label>
+            </div>
+            <div class="form-group">
+              <label>Description <input type="text" id="bulkDesc" required placeholder="Enter description" /></label>
+            </div>
+            <div class="form-group">
+              <label>Status <input type="text" id="bulkStatus" required placeholder="Enter status" /></label>
+            </div>
+            <div class="form-group">
+              <label>Date <input type="date" id="bulkDate" required /></label>
+            </div>
+            <div id="bulkModalActions" class="form-actions"></div>
+          </form>
         </div>
-        <div class="form-group">
-          <label for="exportType">Export Type</label>
-          <select id="exportType" name="exportType">
-            <option value="all">All Employees</option>
-            <option value="active">Active Employees</option>
-            <option value="inactive">Inactive Employees</option>
-          </select>
-        </div>
-        <div class="form-actions">
-          <button type="submit">Upload / Export</button>
-        </div>
-      </form>
+      </div>
     </div>
   </div>
+  <script>
+    let bulkOps = [
+      { id: 1, type: 'Import', description: 'Imported employee data', status: 'Completed', date: '2023-01-10' },
+      { id: 2, type: 'Export', description: 'Exported payroll report', status: 'Pending', date: '2023-02-15' }
+    ];
+    let editingBulkId = null;
+    const bulkTableBody = document.querySelector('#bulkTable tbody');
+    const bulkModal = document.getElementById('bulkModal');
+    const closeBulkModal = document.getElementById('closeBulkModal');
+    const addBulkBtn = document.getElementById('addBulkBtn');
+    const bulkForm = document.getElementById('bulkForm');
+    const bulkModalTitle = document.getElementById('bulkModalTitle');
+    const bulkModalActions = document.getElementById('bulkModalActions');
+    function renderBulkTable() {
+      bulkTableBody.innerHTML = '';
+      bulkOps.forEach(op => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${op.type}</td>
+          <td>${op.description}</td>
+          <td>${op.status}</td>
+          <td>${op.date}</td>
+          <td style="white-space:nowrap;">
+            <button title="View" onclick="viewBulkOp(${op.id})" class="icon-view"><span aria-label='View'>&#128065;</span></button>
+            <button title="Edit" onclick="editBulkOp(${op.id})" class="icon-edit"><span aria-label='Edit'>&#9998;</span></button>
+            <button title="Delete" onclick="deleteBulkOp(${op.id})" class="icon-delete"><span aria-label='Delete'>&#128465;</span></button>
+          </td>
+        `;
+        bulkTableBody.appendChild(tr);
+      });
+    }
+    window.viewBulkOp = function(id) {
+      const op = bulkOps.find(e => e.id === id);
+      bulkModalTitle.textContent = 'View Bulk Operation';
+      bulkForm.bulkId.value = op.id;
+      bulkForm.bulkType.value = op.type;
+      bulkForm.bulkDesc.value = op.description;
+      bulkForm.bulkStatus.value = op.status;
+      bulkForm.bulkDate.value = op.date;
+      Array.from(bulkForm.elements).forEach(el => el.disabled = true);
+      bulkModalActions.innerHTML = '';
+      bulkModal.style.display = 'block';
+    };
+    window.editBulkOp = function(id) {
+      const op = bulkOps.find(e => e.id === id);
+      bulkModalTitle.textContent = 'Edit Bulk Operation';
+      bulkForm.bulkId.value = op.id;
+      bulkForm.bulkType.value = op.type;
+      bulkForm.bulkDesc.value = op.description;
+      bulkForm.bulkStatus.value = op.status;
+      bulkForm.bulkDate.value = op.date;
+      Array.from(bulkForm.elements).forEach(el => el.disabled = false);
+      bulkForm.bulkId.disabled = true;
+      bulkModalActions.innerHTML = '<button type="submit">Save</button>';
+      bulkModal.style.display = 'block';
+      editingBulkId = id;
+    };
+    window.deleteBulkOp = function(id) {
+      if (confirm('Are you sure you want to delete this record?')) {
+        bulkOps = bulkOps.filter(e => e.id !== id);
+        renderBulkTable();
+      }
+    };
+    addBulkBtn.onclick = function() {
+      bulkModalTitle.textContent = 'Add Bulk Operation';
+      bulkForm.reset();
+      bulkForm.bulkId.value = '';
+      Array.from(bulkForm.elements).forEach(el => el.disabled = false);
+      bulkForm.bulkId.disabled = true;
+      bulkModalActions.innerHTML = '<button type="submit">Add</button>';
+      bulkModal.style.display = 'block';
+      editingBulkId = null;
+    };
+    closeBulkModal.onclick = function() {
+      bulkModal.style.display = 'none';
+    };
+    bulkForm.onsubmit = function(e) {
+      e.preventDefault();
+      const op = {
+        id: editingBulkId ? editingBulkId : (bulkOps.length ? Math.max(...bulkOps.map(e => e.id)) + 1 : 1),
+        type: bulkForm.bulkType.value.trim(),
+        description: bulkForm.bulkDesc.value.trim(),
+        status: bulkForm.bulkStatus.value.trim(),
+        date: bulkForm.bulkDate.value
+      };
+      saveBulkOp(op);
+    };
+    function saveBulkOp(op) {
+      if (editingBulkId) {
+        const idx = bulkOps.findIndex(e => e.id === editingBulkId);
+        bulkOps[idx] = op;
+      } else {
+        bulkOps.push(op);
+      }
+      bulkModal.style.display = 'none';
+      renderBulkTable();
+    }
+    window.onclick = function(event) {
+      if (event.target === bulkModal) bulkModal.style.display = 'none';
+    };
+    renderBulkTable();
+  </script>
 </body>
 </html> 
